@@ -7,3 +7,4 @@ dnstester.json
 dnstester.backup.json
 CLAUDE.md
 .claude/
+.env
