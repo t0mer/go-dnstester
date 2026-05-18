@@ -3,7 +3,6 @@ web/dist/
 web/ui/node_modules/
 web/ui/dist/
 *.exe
-go.sum
 dnstester.json
 dnstester.backup.json
 CLAUDE.md

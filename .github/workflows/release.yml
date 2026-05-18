@@ -43,6 +43,9 @@ jobs:
         with:
           go-version-file: go.mod
 
+      - name: Download Go modules
+        run: go mod download
+
       - name: Build all targets
         run: BUILD_MODE=prod VERSION=${{ steps.ver.outputs.version }} bash scripts/build.sh
 
