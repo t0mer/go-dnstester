@@ -1,0 +1,11 @@
+services:
+  dnstester:
+    build: .
+    ports:
+      - "${DNS_PORT:-7020}:${DNS_PORT:-7020}"
+    volumes:
+      - dnstester-config:/config
+    env_file: .env
+
+volumes:
+  dnstester-config:
