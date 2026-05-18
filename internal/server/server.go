@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/tomerklein/dnstester/internal/handler"
 )
 
@@ -70,6 +71,9 @@ func (s *Server) Run() error {
 	mux.HandleFunc("PUT /api/schedules/{id}", s.scheduleHandler.Update)
 	mux.HandleFunc("DELETE /api/schedules/{id}", s.scheduleHandler.Delete)
 
+	// Prometheus metrics
+	mux.Handle("GET /metrics", promhttp.Handler())
+
 	// API documentation
 	mux.HandleFunc("GET /api/openapi.json", handler.ServeSpec)
 	mux.HandleFunc("GET /api/docs", handler.ServeSwaggerUI)
@@ -82,6 +86,7 @@ func (s *Server) Run() error {
 	addr := fmt.Sprintf("0.0.0.0:%d", s.port)
 	fmt.Printf("DNS Tester listening on http://%s\n", addr)
 	fmt.Printf("API docs:           http://%s/api/docs\n", addr)
+	fmt.Printf("Prometheus metrics: http://%s/metrics\n", addr)
 	s.httpSrv = &http.Server{Addr: addr, Handler: mux}
 	return s.httpSrv.ListenAndServe()
 }

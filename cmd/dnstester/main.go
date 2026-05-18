@@ -11,8 +11,10 @@ import (
 	"time"
 
 	ossvc "github.com/kardianos/service"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/tomerklein/dnstester/internal/config"
 	"github.com/tomerklein/dnstester/internal/handler"
+	intmetrics "github.com/tomerklein/dnstester/internal/metrics"
 	httpsrv "github.com/tomerklein/dnstester/internal/server"
 	intsvc "github.com/tomerklein/dnstester/internal/service"
 	"github.com/tomerklein/dnstester/internal/store"
@@ -71,6 +73,8 @@ func (p *program) run() error {
 
 	p.scheduler = intsvc.NewSchedulerService(cfgSvc, testSvc, runs)
 	p.scheduler.Start()
+
+	prometheus.MustRegister(intmetrics.NewCollector(testSvc, runs))
 
 	cfgHandler := handler.NewConfigHandler(cfgSvc)
 	testHandler := handler.NewTestHandler(cfgSvc, testSvc, runs)
