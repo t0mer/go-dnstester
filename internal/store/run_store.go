@@ -218,6 +218,23 @@ func (s *RunStore) Get(id string) (*model.TestRun, error) {
 	return &run, pRows.Err()
 }
 
+// ListFull returns the last n test runs with their full DNS and ping results.
+func (s *RunStore) ListFull(n int) ([]*model.TestRun, error) {
+	summaries, err := s.List(ListFilter{Limit: n, NoTimeFilter: true})
+	if err != nil {
+		return nil, err
+	}
+	runs := make([]*model.TestRun, 0, len(summaries))
+	for _, summary := range summaries {
+		run, err := s.Get(summary.ID)
+		if err != nil || run == nil {
+			continue
+		}
+		runs = append(runs, run)
+	}
+	return runs, nil
+}
+
 // Count returns the total number of test runs stored in the database.
 func (s *RunStore) Count() (int64, error) {
 	var n int64

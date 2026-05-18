@@ -23,7 +23,7 @@ const openapiSpec = `{
     "/metrics": {
       "get": {
         "summary": "Prometheus metrics",
-        "description": "Exposes metrics in Prometheus text format (served at root, not under /api). Metrics: dnstester_dns_response_seconds{server_name,server_addr,fqdn,status}, dnstester_ping_latency_seconds{server_name,server_addr,status}, dnstester_last_run_timestamp_seconds, dnstester_last_run_duration_seconds, dnstester_test_runs_total, plus standard Go runtime metrics.",
+        "description": "Exposes metrics in Prometheus text format (served at root, not under /api). Scalar metrics (latest run): dnstester_dns_response_seconds{server_name,server_addr,fqdn,status}, dnstester_ping_latency_seconds{server_name,server_addr,status}, dnstester_last_run_timestamp_seconds, dnstester_last_run_duration_seconds, dnstester_test_runs_total. Per-run metrics (last 5 runs, labelled by run_id): dnstester_run_info{run_id,started_at,status}=1, dnstester_run_duration_seconds{run_id}, dnstester_run_dns_response_seconds{run_id,server_name,server_addr,fqdn,status}, dnstester_run_ping_latency_seconds{run_id,server_name,server_addr,status}. Plus standard Go runtime metrics.",
         "operationId": "getMetrics",
         "tags": ["Monitoring"],
         "servers": [{ "url": "/" }],
