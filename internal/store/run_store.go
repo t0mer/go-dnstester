@@ -218,6 +218,13 @@ func (s *RunStore) Get(id string) (*model.TestRun, error) {
 	return &run, pRows.Err()
 }
 
+// Count returns the total number of test runs stored in the database.
+func (s *RunStore) Count() (int64, error) {
+	var n int64
+	err := s.db.QueryRow(`SELECT COUNT(*) FROM test_runs`).Scan(&n)
+	return n, err
+}
+
 // LastRunForSchedule returns when the given schedule last ran (zero time if never).
 func (s *RunStore) LastRunForSchedule(scheduleID string) (time.Time, error) {
 	var t time.Time

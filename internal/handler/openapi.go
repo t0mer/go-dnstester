@@ -9,15 +9,32 @@ const openapiSpec = `{
     "version": "1.0.0"
   },
   "servers": [
-    { "url": "/api", "description": "Local server" }
+    { "url": "/api", "description": "REST API" },
+    { "url": "/",    "description": "Root (Prometheus metrics)" }
   ],
   "tags": [
     { "name": "Tests",     "description": "Run DNS tests and retrieve results" },
     { "name": "History",   "description": "Browse historical test runs" },
     { "name": "Settings",  "description": "Manage DNS servers, FQDNs, and global configuration" },
-    { "name": "Schedules", "description": "Manage automated scheduled scans" }
+    { "name": "Schedules", "description": "Manage automated scheduled scans" },
+    { "name": "Monitoring","description": "Prometheus metrics export" }
   ],
   "paths": {
+    "/metrics": {
+      "get": {
+        "summary": "Prometheus metrics",
+        "description": "Exposes metrics in Prometheus text format (served at root, not under /api). Metrics: dnstester_dns_response_seconds{server_name,server_addr,fqdn,status}, dnstester_ping_latency_seconds{server_name,server_addr,status}, dnstester_last_run_timestamp_seconds, dnstester_last_run_duration_seconds, dnstester_test_runs_total, plus standard Go runtime metrics.",
+        "operationId": "getMetrics",
+        "tags": ["Monitoring"],
+        "servers": [{ "url": "/" }],
+        "responses": {
+          "200": {
+            "description": "Prometheus text exposition format",
+            "content": { "text/plain": { "schema": { "type": "string" } } }
+          }
+        }
+      }
+    },
     "/test/run": {
       "get": {
         "summary": "Run a DNS test",
