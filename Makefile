@@ -1,4 +1,4 @@
-.PHONY: build build-dev build-local test lint clean package package-dev
+.PHONY: build build-dev build-local test lint clean package package-dev release next-version
 
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 
@@ -26,3 +26,12 @@ package:
 
 package-dev:
 	BUILD_MODE=dev VERSION=$(VERSION) bash scripts/build.sh
+
+next-version:
+	@bash scripts/next-version.sh
+
+release:
+	@NEXT=$$(bash scripts/next-version.sh) && \
+	echo "Tagging $$NEXT" && \
+	git tag "$$NEXT" && \
+	git push origin "$$NEXT"

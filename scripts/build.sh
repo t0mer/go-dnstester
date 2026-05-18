@@ -10,7 +10,14 @@ UI_DIR="web/ui"
 EMBED_DIR="web/dist"
 OUT_DIR="dist"
 
-TARGETS="${TARGETS:-linux/amd64 linux/arm linux/arm64 linux/386 windows/amd64 windows/386 darwin/amd64 darwin/arm64}"
+# Format: GOOS/GOARCH/GOARM:output-suffix  (GOARM empty when unused)
+TARGETS="${TARGETS:-
+  linux/amd64/:linux-amd64
+  linux/arm/7:linux-armhf
+  linux/arm64/:linux-arm64
+  linux/arm64/:linux-aarch64
+  windows/amd64/:windows-amd64
+}"
 
 log() { printf '\033[1;34m[build]\033[0m %s\n' "$*"; }
 
@@ -25,7 +32,6 @@ build_ui() {
   rm -rf "$EMBED_DIR"
   mkdir -p "$EMBED_DIR"
 
-  # Vite outputs to web/ui/dist; copy everything into web/dist.
   if [ -d "$UI_DIR/dist" ]; then
     cp -R "$UI_DIR/dist/." "$EMBED_DIR/"
   else
@@ -35,14 +41,20 @@ build_ui() {
 }
 
 build_go() {
-  local goos="$1" goarch="$2"
-  local ext=""
-  [ "$goos" = "windows" ] && ext=".exe"
-  local out="$OUT_DIR/dnstester-${VERSION}-${goos}-${goarch}${ext}"
+  local spec="$1"                      # e.g. linux/arm/7:linux-armhf
+  local target="${spec%%:*}"           # linux/arm/7
+  local suffix="${spec##*:}"           # linux-armhf
 
+  local goos goarch goarm ext=""
+  IFS='/' read -r goos goarch goarm <<< "$target"
+
+  [ "$goos" = "windows" ] && ext=".exe"
+
+  local out="$OUT_DIR/dnstester-${VERSION}-${suffix}${ext}"
   log "Compiling $out"
   mkdir -p "$OUT_DIR"
-  CGO_ENABLED=0 GOOS="$goos" GOARCH="$goarch" \
+
+  CGO_ENABLED=0 GOOS="$goos" GOARCH="$goarch" GOARM="${goarm:-}" \
     go build \
       -trimpath \
       -ldflags "-s -w -X main.version=${VERSION} -X main.buildMode=${BUILD_MODE}" \
@@ -55,13 +67,19 @@ main() {
   build_ui
 
   if [ "$BUILD_MODE" = "local" ]; then
-    build_go "$(go env GOOS)" "$(go env GOARCH)"
+    CGO_ENABLED=0 go build \
+      -trimpath \
+      -ldflags "-s -w -X main.version=${VERSION} -X main.buildMode=${BUILD_MODE}" \
+      -o "$OUT_DIR/dnstester-${VERSION}-$(go env GOOS)-$(go env GOARCH)" \
+      ./cmd/dnstester
     return
   fi
 
-  for target in $TARGETS; do
-    build_go "${target%/*}" "${target#*/}"
-  done
+  while IFS= read -r target; do
+    target="${target//[[:space:]]/}"
+    [ -z "$target" ] && continue
+    build_go "$target"
+  done <<< "$TARGETS"
 
   log "Done — artifacts in $OUT_DIR/"
 }
