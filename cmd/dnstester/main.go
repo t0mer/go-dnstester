@@ -28,6 +28,7 @@ var (
 
 type program struct {
 	port      int
+	configDir string
 	db        *sql.DB
 	web       *httpsrv.Server
 	scheduler *intsvc.SchedulerService
@@ -57,7 +58,7 @@ func (p *program) run() error {
 	_ = version
 	_ = buildMode
 
-	configDir := configDirectory()
+	configDir := p.configDir
 
 	db, err := store.Open(filepath.Join(configDir, "dnstester.db"))
 	if err != nil {
@@ -97,9 +98,10 @@ func main() {
 	}
 
 	port := flag.Int("port", 7020, "port to listen on")
+	conf := flag.String("conf", "", "path to config directory (overrides CONFIG_PATH env var)")
 	flag.Parse()
 
-	prg := &program{port: *port}
+	prg := &program{port: *port, configDir: resolveConfigDir(*conf)}
 	s, err := ossvc.New(prg, svcConfig(*port))
 	if err != nil {
 		log.Fatal(err)
@@ -109,12 +111,18 @@ func main() {
 	}
 }
 
-func configDirectory() string {
-	dir, err := os.UserConfigDir()
-	if err != nil {
-		dir = "."
+func resolveConfigDir(flagVal string) string {
+	dir := flagVal
+	if dir == "" {
+		dir = os.Getenv("CONFIG_PATH")
 	}
-	dir = filepath.Join(dir, "dnstester")
+	if dir == "" {
+		base, err := os.UserConfigDir()
+		if err != nil {
+			base = "."
+		}
+		dir = filepath.Join(base, "dnstester")
+	}
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		log.Fatalf("create config dir: %v", err)
 	}
