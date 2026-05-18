@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"strings"
 	"time"
 
 	"github.com/tomerklein/dnstester/internal/model"
@@ -19,6 +20,16 @@ type RunSummary struct {
 	TotalQueries  int        `json:"total_queries"`
 	SuccessCount  int        `json:"success_count"`
 	AvgResponseMs float64    `json:"avg_response_ms"`
+}
+
+// ListFilter controls which runs are returned by List.
+type ListFilter struct {
+	From          time.Time // inclusive; if zero and !NoTimeFilter, defaults to now-Hours
+	To            time.Time // inclusive; if zero, defaults to now
+	Hours         int       // look-back window when From is zero; 0 → 24
+	Limit         int       // max rows; 0 → 100
+	ScheduledOnly bool
+	NoTimeFilter  bool // skip time-range filtering entirely
 }
 
 type RunStore struct {
@@ -75,11 +86,43 @@ func (s *RunStore) Save(run *model.TestRun) error {
 	return tx.Commit()
 }
 
-func (s *RunStore) List(limit int, scheduledOnly bool) ([]RunSummary, error) {
-	where := ""
-	if scheduledOnly {
-		where = "WHERE r.is_scheduled = 1"
+func (s *RunStore) List(f ListFilter) ([]RunSummary, error) {
+	limit := f.Limit
+	if limit <= 0 {
+		limit = 100
 	}
+
+	var clauses []string
+	var args []any
+
+	if !f.NoTimeFilter {
+		now := time.Now()
+		to := f.To
+		if to.IsZero() {
+			to = now
+		}
+		from := f.From
+		if from.IsZero() {
+			hours := f.Hours
+			if hours <= 0 {
+				hours = 24
+			}
+			from = now.Add(-time.Duration(hours) * time.Hour)
+		}
+		clauses = append(clauses, "r.started_at >= ?", "r.started_at <= ?")
+		args = append(args, from, to)
+	}
+
+	if f.ScheduledOnly {
+		clauses = append(clauses, "r.is_scheduled = 1")
+	}
+
+	where := ""
+	if len(clauses) > 0 {
+		where = "WHERE " + strings.Join(clauses, " AND ")
+	}
+	args = append(args, limit)
+
 	rows, err := s.db.Query(fmt.Sprintf(`
 		SELECT
 			r.id, r.started_at, r.completed_at, r.status, r.schedule_id,
@@ -91,7 +134,7 @@ func (s *RunStore) List(limit int, scheduledOnly bool) ([]RunSummary, error) {
 		%s
 		GROUP BY r.id
 		ORDER BY r.started_at DESC
-		LIMIT ?`, where), limit)
+		LIMIT ?`, where), args...)
 	if err != nil {
 		return nil, err
 	}

@@ -12,32 +12,67 @@ import (
 )
 
 type Server struct {
-	port           int
-	cfgHandler     *handler.ConfigHandler
-	testHandler    *handler.TestHandler
-	historyHandler *handler.HistoryHandler
-	ui             fs.FS
-	httpSrv        *http.Server
+	port             int
+	cfgHandler       *handler.ConfigHandler
+	testHandler      *handler.TestHandler
+	historyHandler   *handler.HistoryHandler
+	scheduleHandler  *handler.ScheduleHandler
+	ui               fs.FS
+	httpSrv          *http.Server
 }
 
-func New(port int, cfg *handler.ConfigHandler, test *handler.TestHandler, history *handler.HistoryHandler, ui fs.FS) *Server {
-	return &Server{port: port, cfgHandler: cfg, testHandler: test, historyHandler: history, ui: ui}
+func New(
+	port int,
+	cfg *handler.ConfigHandler,
+	test *handler.TestHandler,
+	history *handler.HistoryHandler,
+	schedule *handler.ScheduleHandler,
+	ui fs.FS,
+) *Server {
+	return &Server{
+		port:            port,
+		cfgHandler:      cfg,
+		testHandler:     test,
+		historyHandler:  history,
+		scheduleHandler: schedule,
+		ui:              ui,
+	}
 }
 
 func (s *Server) Run() error {
 	mux := http.NewServeMux()
 
+	// Tests
+	mux.HandleFunc("GET /api/test/run", s.testHandler.Run)
+	mux.HandleFunc("POST /api/test/run", s.testHandler.Run)
+	mux.HandleFunc("GET /api/test/latest", s.testHandler.Latest)
+
+	// History
+	mux.HandleFunc("GET /api/history", s.historyHandler.List)
+	mux.HandleFunc("GET /api/history/{id}", s.historyHandler.Get)
+	mux.HandleFunc("GET /api/compare", s.historyHandler.Compare)
+
+	// Settings (canonical path; also kept under /api/config for backward compat)
+	mux.HandleFunc("GET /api/settings", s.cfgHandler.Get)
+	mux.HandleFunc("PUT /api/settings", s.cfgHandler.Update)
+
+	// Config (backward-compat aliases + backup/restore/export/import)
 	mux.HandleFunc("GET /api/config", s.cfgHandler.Get)
 	mux.HandleFunc("PUT /api/config", s.cfgHandler.Update)
 	mux.HandleFunc("POST /api/config/backup", s.cfgHandler.Backup)
 	mux.HandleFunc("POST /api/config/restore", s.cfgHandler.Restore)
 	mux.HandleFunc("GET /api/config/export", s.cfgHandler.Export)
 	mux.HandleFunc("POST /api/config/import", s.cfgHandler.Import)
-	mux.HandleFunc("POST /api/test/run", s.testHandler.Run)
-	mux.HandleFunc("GET /api/test/latest", s.testHandler.Latest)
-	mux.HandleFunc("GET /api/history", s.historyHandler.List)
-	mux.HandleFunc("GET /api/history/{id}", s.historyHandler.Get)
-	mux.HandleFunc("GET /api/compare", s.historyHandler.Compare)
+
+	// Schedules
+	mux.HandleFunc("GET /api/schedules", s.scheduleHandler.List)
+	mux.HandleFunc("POST /api/schedules", s.scheduleHandler.Create)
+	mux.HandleFunc("PUT /api/schedules/{id}", s.scheduleHandler.Update)
+	mux.HandleFunc("DELETE /api/schedules/{id}", s.scheduleHandler.Delete)
+
+	// API documentation
+	mux.HandleFunc("GET /api/openapi.json", handler.ServeSpec)
+	mux.HandleFunc("GET /api/docs", handler.ServeSwaggerUI)
 
 	mux.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "not found", http.StatusNotFound)
@@ -46,6 +81,7 @@ func (s *Server) Run() error {
 
 	addr := fmt.Sprintf("0.0.0.0:%d", s.port)
 	fmt.Printf("DNS Tester listening on http://%s\n", addr)
+	fmt.Printf("API docs:           http://%s/api/docs\n", addr)
 	s.httpSrv = &http.Server{Addr: addr, Handler: mux}
 	return s.httpSrv.ListenAndServe()
 }

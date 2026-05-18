@@ -9,6 +9,7 @@ import (
 	"github.com/tomerklein/dnstester/internal/store"
 )
 
+
 type TestHandler struct {
 	cfgSvc  *config.Service
 	testSvc *service.TestService
@@ -39,7 +40,7 @@ func (h *TestHandler) Latest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Fallback: most recent run stored in the database (survives restarts).
-	summaries, err := h.runs.List(1, false)
+	summaries, err := h.runs.List(store.ListFilter{Limit: 1, NoTimeFilter: true})
 	if err != nil || len(summaries) == 0 {
 		http.Error(w, "no results yet", http.StatusNotFound)
 		return
