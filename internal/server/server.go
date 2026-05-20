@@ -13,13 +13,14 @@ import (
 )
 
 type Server struct {
-	port             int
-	cfgHandler       *handler.ConfigHandler
-	testHandler      *handler.TestHandler
-	historyHandler   *handler.HistoryHandler
-	scheduleHandler  *handler.ScheduleHandler
-	ui               fs.FS
-	httpSrv          *http.Server
+	port            int
+	cfgHandler      *handler.ConfigHandler
+	testHandler     *handler.TestHandler
+	historyHandler  *handler.HistoryHandler
+	scheduleHandler *handler.ScheduleHandler
+	updateHandler   *handler.UpdateHandler
+	ui              fs.FS
+	httpSrv         *http.Server
 }
 
 func New(
@@ -28,6 +29,7 @@ func New(
 	test *handler.TestHandler,
 	history *handler.HistoryHandler,
 	schedule *handler.ScheduleHandler,
+	update *handler.UpdateHandler,
 	ui fs.FS,
 ) *Server {
 	return &Server{
@@ -36,6 +38,7 @@ func New(
 		testHandler:     test,
 		historyHandler:  history,
 		scheduleHandler: schedule,
+		updateHandler:   update,
 		ui:              ui,
 	}
 }
@@ -70,6 +73,11 @@ func (s *Server) Run() error {
 	mux.HandleFunc("POST /api/schedules", s.scheduleHandler.Create)
 	mux.HandleFunc("PUT /api/schedules/{id}", s.scheduleHandler.Update)
 	mux.HandleFunc("DELETE /api/schedules/{id}", s.scheduleHandler.Delete)
+
+	// Update
+	mux.HandleFunc("GET /api/version", s.updateHandler.Version)
+	mux.HandleFunc("GET /api/update/check", s.updateHandler.Check)
+	mux.HandleFunc("POST /api/update/apply", s.updateHandler.Apply)
 
 	// Prometheus metrics
 	mux.Handle("GET /metrics", promhttp.Handler())

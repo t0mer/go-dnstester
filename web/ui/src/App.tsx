@@ -10,7 +10,11 @@ import { FQDNConfig } from './components/FQDNConfig'
 import { ScheduleConfig } from './components/ScheduleConfig'
 import { HistoryList } from './components/HistoryList'
 import { CompareView } from './components/CompareView'
+import { GeneralSettings } from './components/GeneralSettings'
+import { UpdateModal } from './components/UpdateModal'
 import type { TestRun } from './types'
+
+const SKIPPED_VERSION_KEY = 'dnstester_skipped_version'
 
 type Tab = 'results' | 'compare' | 'history' | 'settings'
 const VALID_TABS: Tab[] = ['results', 'compare', 'history', 'settings']
@@ -24,6 +28,10 @@ export default function App() {
   const [tab, _setTab] = useState<Tab>(tabFromHash)
   const [activeRun, setActiveRun] = useState<TestRun | null>(null)
   const [baseline, setBaseline] = useState<TestRun | null>(null)
+  const [skippedVersion, setSkippedVersion] = useState<string>(
+    () => localStorage.getItem(SKIPPED_VERSION_KEY) ?? ''
+  )
+  const [updateModalOpen, setUpdateModalOpen] = useState(false)
   const qc = useQueryClient()
 
   const setTab = (t: Tab) => {
@@ -49,10 +57,41 @@ export default function App() {
     if (latestRun && !activeRun) setActiveRun(latestRun)
   }, [latestRun]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  const { data: versionInfo } = useQuery({
+    queryKey: ['version'],
+    queryFn: api.getVersion,
+    staleTime: Infinity,
+  })
+
   const { data: config, isLoading: configLoading } = useQuery({
     queryKey: ['config'],
     queryFn: api.getConfig,
   })
+
+  const { data: updateInfo } = useQuery({
+    queryKey: ['update-check'],
+    queryFn: api.checkUpdate,
+    enabled: !!(config?.auto_update),
+    staleTime: 4 * 60 * 60 * 1000,
+    refetchInterval: 4 * 60 * 60 * 1000,
+    retry: false,
+  })
+
+  // Auto-open modal when a new (unskipped) update is detected.
+  useEffect(() => {
+    if (updateInfo?.available && updateInfo.latest !== skippedVersion) {
+      setUpdateModalOpen(true)
+    }
+  }, [updateInfo]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleSkipUpdate = () => {
+    if (!updateInfo) return
+    localStorage.setItem(SKIPPED_VERSION_KEY, updateInfo.latest)
+    setSkippedVersion(updateInfo.latest)
+    setUpdateModalOpen(false)
+  }
+
+  const showUpdateBadge = !!(updateInfo?.available && updateInfo.latest === skippedVersion)
 
   const { data: history = [] } = useQuery({
     queryKey: ['history'],
@@ -80,9 +119,31 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {updateModalOpen && updateInfo?.available && (
+        <UpdateModal
+          info={updateInfo}
+          onSkip={handleSkipUpdate}
+          onClose={() => setUpdateModalOpen(false)}
+        />
+      )}
+
       <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">DNS Tester</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-semibold text-gray-900">DNS Tester</h1>
+            {versionInfo && (
+              <span className="text-xs text-gray-400 font-mono">{versionInfo.version}</span>
+            )}
+            {showUpdateBadge && (
+              <button
+                onClick={() => setUpdateModalOpen(true)}
+                title={`Update available: ${updateInfo!.latest}`}
+                className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-xs font-medium hover:bg-amber-200 transition-colors"
+              >
+                ↑ {updateInfo!.latest}
+              </button>
+            )}
+          </div>
           {activeRun?.completed_at && (
             <p className="text-xs text-gray-500 mt-0.5">
               Run {new Date(activeRun.started_at).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'medium' })}
@@ -180,6 +241,7 @@ export default function App() {
               <p className="text-gray-500">Loading config…</p>
             ) : config ? (
               <>
+                <GeneralSettings config={config} />
                 <ScheduleConfig config={config} history={history} />
                 <ServerConfig config={config} />
                 <FQDNConfig config={config} />

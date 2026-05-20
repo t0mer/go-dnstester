@@ -55,7 +55,6 @@ func (p *program) Stop(_ ossvc.Service) error {
 }
 
 func (p *program) run() error {
-	_ = version
 	_ = buildMode
 
 	configDir := p.configDir
@@ -71,6 +70,7 @@ func (p *program) run() error {
 	dnsSvc := intsvc.NewDNSService()
 	pingSvc := intsvc.NewPingService()
 	testSvc := intsvc.NewTestService(dnsSvc, pingSvc)
+	updateSvc := intsvc.NewUpdateService(version)
 
 	p.scheduler = intsvc.NewSchedulerService(cfgSvc, testSvc, runs)
 	p.scheduler.Start()
@@ -81,13 +81,14 @@ func (p *program) run() error {
 	testHandler := handler.NewTestHandler(cfgSvc, testSvc, runs)
 	historyHandler := handler.NewHistoryHandler(runs)
 	scheduleHandler := handler.NewScheduleHandler(cfgSvc)
+	updateHandler := handler.NewUpdateHandler(updateSvc)
 
 	ui, err := fs.Sub(webembed.Assets, "dist")
 	if err != nil {
 		return fmt.Errorf("ui assets: %w", err)
 	}
 
-	p.web = httpsrv.New(p.port, cfgHandler, testHandler, historyHandler, scheduleHandler, ui)
+	p.web = httpsrv.New(p.port, cfgHandler, testHandler, historyHandler, scheduleHandler, updateHandler, ui)
 	return p.web.Run()
 }
 
