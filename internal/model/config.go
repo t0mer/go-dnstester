@@ -1,9 +1,10 @@
 package model
 
 type Config struct {
-	Servers   []DNSServer     `json:"servers"`
-	FQDNs     []string        `json:"fqdns"`
-	Schedules []ScheduledScan `json:"schedules"`
+	Servers    []DNSServer     `json:"servers"`
+	FQDNs      []string        `json:"fqdns"`
+	Schedules  []ScheduledScan `json:"schedules"`
+	AutoUpdate bool            `json:"auto_update"`
 }
 
 // ScheduledScan defines when an automatic test run is triggered.

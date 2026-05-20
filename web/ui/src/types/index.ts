@@ -29,6 +29,16 @@ export interface Config {
   servers: DNSServer[]
   fqdns: string[]
   schedules: ScheduledScan[]
+  auto_update: boolean
+}
+
+export interface UpdateInfo {
+  current: string
+  latest: string
+  available: boolean
+  release_notes: string
+  published_at: string
+  release_url: string
 }
 
 export interface QueryResult {

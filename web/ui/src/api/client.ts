@@ -1,4 +1,4 @@
-import type { Config, TestRun, RunSummary, CompareResult } from '../types'
+import type { Config, TestRun, RunSummary, CompareResult, UpdateInfo } from '../types'
 
 const BASE = '/api'
 
@@ -33,4 +33,5 @@ export const api = {
   getRun: (id: string): Promise<TestRun> => request('GET', `/history/${id}`),
   compare: (idA: string, idB: string): Promise<CompareResult> =>
     request('GET', `/compare?a=${idA}&b=${idB}`),
+  checkUpdate: (): Promise<UpdateInfo> => request('GET', '/update/check'),
 }
