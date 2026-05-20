@@ -1,6 +1,7 @@
 export interface DNSServer {
   name: string
   address: string
+  protocol?: string  // undefined/"udp" = plain UDP/53 | "dot" = DNS-over-TLS | "doh" = DNS-over-HTTPS
   enabled: boolean
 }
 
@@ -49,6 +50,7 @@ export interface UpdateInfo {
 export interface QueryResult {
   server_name: string
   server_addr: string
+  protocol?: string
   fqdn: string
   response_ms: number
   status: 'ok' | 'error' | 'timeout'
