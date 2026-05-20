@@ -1,0 +1,16 @@
+services:
+  dnstester:
+    image: techblog/dnstester:latest
+    container_name: dnstester
+    ports:
+      - "7020:7020"
+    volumes:
+      - dnstester-config:/config
+    environment:
+      - CONFIG_PATH=/config
+    cap_add:
+      - NET_RAW
+    restart: unless-stopped
+
+volumes:
+  dnstester-config:
