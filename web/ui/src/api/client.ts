@@ -1,4 +1,4 @@
-import type { Config, TestRun, RunSummary, CompareResult, UpdateInfo, VersionInfo } from '../types'
+import type { Config, TestRun, CompareResult, UpdateInfo, VersionInfo, PagedHistory } from '../types'
 
 const BASE = '/api'
 
@@ -28,8 +28,8 @@ export const api = {
   },
   runTest: (): Promise<TestRun> => request('POST', '/test/run'),
   getLatest: (): Promise<TestRun> => request('GET', '/test/latest'),
-  listHistory: (limit = 50, scheduledOnly = false): Promise<RunSummary[]> =>
-    request('GET', `/history?limit=${limit}${scheduledOnly ? '&scheduled=true' : ''}`),
+  listHistory: (limit = 50, offset = 0, scheduledOnly = false): Promise<PagedHistory> =>
+    request('GET', `/history?limit=${limit}&offset=${offset}${scheduledOnly ? '&scheduled=true' : ''}`),
   getRun: (id: string): Promise<TestRun> => request('GET', `/history/${id}`),
   compare: (idA: string, idB: string): Promise<CompareResult> =>
     request('GET', `/compare?a=${idA}&b=${idB}`),

@@ -5,9 +5,9 @@ interface Props {
 }
 
 const STATUS_COLOR: Record<string, string> = {
-  ok: 'text-green-600',
-  error: 'text-red-600',
-  timeout: 'text-yellow-600',
+  ok: 'text-green-600 dark:text-green-400',
+  error: 'text-red-600 dark:text-red-400',
+  timeout: 'text-yellow-600 dark:text-yellow-400',
 }
 
 export function PingResults({ results }: Props) {
@@ -15,13 +15,13 @@ export function PingResults({ results }: Props) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
       {results.map((r, i) => (
-        <div key={i} className="bg-white border border-gray-200 rounded-lg p-4">
-          <p className="text-sm font-medium text-gray-900 truncate">{r.server_name}</p>
-          <p className="text-xs text-gray-400 mb-2">{r.server_addr}</p>
+        <div key={i} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{r.server_name}</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">{r.server_addr}</p>
           {r.status === 'ok' ? (
-            <p className="text-xl font-semibold text-gray-800">
+            <p className="text-xl font-semibold text-gray-800 dark:text-gray-200">
               {r.latency_ms.toFixed(1)}
-              <span className="text-sm font-normal text-gray-400 ml-1">ms</span>
+              <span className="text-sm font-normal text-gray-400 dark:text-gray-500 ml-1">ms</span>
             </p>
           ) : (
             <p className={`text-sm font-medium ${STATUS_COLOR[r.status] ?? 'text-gray-500'}`}>

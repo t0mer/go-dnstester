@@ -75,6 +75,11 @@ export interface TestRun {
   schedule_id: string
 }
 
+export interface PagedHistory {
+  total: number
+  items: RunSummary[]
+}
+
 export interface RunSummary {
   id: string
   started_at: string

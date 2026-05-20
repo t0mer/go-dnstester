@@ -28,6 +28,7 @@ type ListFilter struct {
 	To            time.Time // inclusive; if zero, defaults to now
 	Hours         int       // look-back window when From is zero; 0 → 24
 	Limit         int       // max rows; 0 → 100
+	Offset        int       // rows to skip (for pagination)
 	ScheduledOnly bool
 	NoTimeFilter  bool // skip time-range filtering entirely
 }
@@ -86,12 +87,8 @@ func (s *RunStore) Save(run *model.TestRun) error {
 	return tx.Commit()
 }
 
-func (s *RunStore) List(f ListFilter) ([]RunSummary, error) {
-	limit := f.Limit
-	if limit <= 0 {
-		limit = 100
-	}
-
+// buildWhere constructs the shared WHERE clause and args for List and Count.
+func buildWhere(f ListFilter) (string, []any) {
 	var clauses []string
 	var args []any
 
@@ -121,7 +118,17 @@ func (s *RunStore) List(f ListFilter) ([]RunSummary, error) {
 	if len(clauses) > 0 {
 		where = "WHERE " + strings.Join(clauses, " AND ")
 	}
-	args = append(args, limit)
+	return where, args
+}
+
+func (s *RunStore) List(f ListFilter) ([]RunSummary, error) {
+	limit := f.Limit
+	if limit <= 0 {
+		limit = 100
+	}
+
+	where, args := buildWhere(f)
+	args = append(args, limit, f.Offset)
 
 	rows, err := s.db.Query(fmt.Sprintf(`
 		SELECT
@@ -134,7 +141,7 @@ func (s *RunStore) List(f ListFilter) ([]RunSummary, error) {
 		%s
 		GROUP BY r.id
 		ORDER BY r.started_at DESC
-		LIMIT ?`, where), args...)
+		LIMIT ? OFFSET ?`, where), args...)
 	if err != nil {
 		return nil, err
 	}
@@ -154,6 +161,16 @@ func (s *RunStore) List(f ListFilter) ([]RunSummary, error) {
 		runs = append(runs, run)
 	}
 	return runs, rows.Err()
+}
+
+// CountFiltered returns the total number of runs matching f (ignoring Limit/Offset).
+func (s *RunStore) CountFiltered(f ListFilter) (int64, error) {
+	where, args := buildWhere(f)
+	var n int64
+	err := s.db.QueryRow(
+		fmt.Sprintf(`SELECT COUNT(*) FROM test_runs r %s`, where), args...,
+	).Scan(&n)
+	return n, err
 }
 
 func (s *RunStore) Get(id string) (*model.TestRun, error) {

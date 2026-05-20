@@ -7,9 +7,11 @@
     @apply px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors whitespace-nowrap;
   }
   .btn-secondary {
-    @apply px-3 py-1.5 bg-white text-gray-700 text-sm font-medium rounded-md border border-gray-300 hover:bg-gray-50 transition-colors whitespace-nowrap;
+    @apply px-3 py-1.5 bg-white text-gray-700 text-sm font-medium rounded-md border border-gray-300 hover:bg-gray-50 transition-colors whitespace-nowrap
+           dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700;
   }
   .input {
-    @apply px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500;
+    @apply px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900
+           dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 dark:focus:ring-blue-400;
   }
 }

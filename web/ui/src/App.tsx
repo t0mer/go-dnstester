@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from './api/client'
+import { useDarkMode } from './hooks/useDarkMode'
 import { TestRunner } from './components/TestRunner'
 import { DNSTable } from './components/DNSTable'
 import { ResponseChart } from './components/ResponseChart'
@@ -25,6 +26,7 @@ function tabFromHash(): Tab {
 }
 
 export default function App() {
+  const [dark, setDark] = useDarkMode()
   const [tab, _setTab] = useState<Tab>(tabFromHash)
   const [activeRun, setActiveRun] = useState<TestRun | null>(null)
   const [baseline, setBaseline] = useState<TestRun | null>(null)
@@ -93,11 +95,12 @@ export default function App() {
 
   const showUpdateBadge = !!(updateInfo?.available && updateInfo.latest === skippedVersion)
 
-  const { data: history = [] } = useQuery({
+  const { data: historyData } = useQuery({
     queryKey: ['history'],
-    queryFn: () => api.listHistory(100),
+    queryFn: () => api.listHistory(200),
     refetchInterval: 15_000,
   })
+  const history = historyData?.items ?? []
 
   const handleResult = (run: TestRun) => {
     setActiveRun(run)
@@ -118,7 +121,7 @@ export default function App() {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors">
       {updateModalOpen && updateInfo?.available && (
         <UpdateModal
           info={updateInfo}
@@ -127,12 +130,12 @@ export default function App() {
         />
       )}
 
-      <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-semibold text-gray-900">DNS Tester</h1>
+      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-3 flex-wrap">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100">DNS Tester</h1>
             {versionInfo && (
-              <span className="text-xs text-gray-400 font-mono">{versionInfo.version}</span>
+              <span className="text-xs text-gray-400 font-mono hidden sm:inline">{versionInfo.version}</span>
             )}
             {showUpdateBadge && (
               <button
@@ -145,11 +148,11 @@ export default function App() {
             )}
           </div>
           {activeRun?.completed_at && (
-            <p className="text-xs text-gray-500 mt-0.5">
-              Run {new Date(activeRun.started_at).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'medium' })}
+            <p className="text-xs text-gray-500 mt-0.5 truncate max-w-[240px] sm:max-w-none">
+              Run {new Date(activeRun.started_at).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}
               {baseline && (
                 <span className="ml-2 text-purple-600">
-                  · comparing with {new Date(baseline.started_at).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'medium' })}
+                  · baseline set
                   <button onClick={() => setBaseline(null)} className="ml-1 hover:underline">(clear)</button>
                 </span>
               )}
@@ -159,16 +162,16 @@ export default function App() {
         <TestRunner onResult={handleResult} />
       </header>
 
-      <nav className="bg-white border-b border-gray-200 px-6">
-        <div className="flex gap-1">
+      <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-2 sm:px-6 overflow-x-auto">
+        <div className="flex">
           {TABS.map(t => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+              className={`flex-1 sm:flex-none px-3 sm:px-5 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                 tab === t.id
                   ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
               }`}
             >
               {t.label}
@@ -177,34 +180,34 @@ export default function App() {
         </div>
       </nav>
 
-      <main className="p-6 max-w-7xl mx-auto">
+      <main className="p-4 sm:p-6 max-w-7xl mx-auto">
         {tab === 'results' && (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {!activeRun ? (
-              <div className="text-center py-20 text-gray-400">
+              <div className="text-center py-20 text-gray-400 dark:text-gray-500">
                 <p className="text-lg">No results yet</p>
                 <p className="text-sm mt-1">Click "Run Test" to start, or pick a run from History</p>
               </div>
             ) : (
               <>
                 <section>
-                  <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                  <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
                     Avg Response Time per Server
                   </h2>
-                  <div className="bg-white rounded-lg border border-gray-200 p-4">
+                  <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
                     <ResponseChart results={activeRun.dns_results} baseline={baseline?.dns_results} />
                   </div>
                 </section>
                 <section>
-                  <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                  <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
                     DNS Query Results
                   </h2>
-                  <div className="bg-white rounded-lg border border-gray-200">
+                  <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
                     <DNSTable results={activeRun.dns_results} baseline={baseline?.dns_results} />
                   </div>
                 </section>
                 <section>
-                  <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                  <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
                     Ping Results
                   </h2>
                   <PingResults results={activeRun.ping_results} />
@@ -217,15 +220,14 @@ export default function App() {
         {tab === 'compare' && <CompareView history={history} schedules={config?.schedules ?? []} />}
 
         {tab === 'history' && (
-          <div className="bg-white rounded-lg border border-gray-200">
-            <div className="px-5 py-4 border-b border-gray-200">
-              <h2 className="text-base font-semibold text-gray-900">Test History</h2>
-              <p className="text-xs text-gray-500 mt-0.5">
+          <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="px-5 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Test History</h2>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 <strong>View</strong> — load into Results · <strong>Baseline</strong> — diff against active run · 🕐 = scheduled run
               </p>
             </div>
             <HistoryList
-              history={history}
               schedules={config?.schedules ?? []}
               activeId={activeRun?.id}
               baselineId={baseline?.id}
@@ -238,10 +240,10 @@ export default function App() {
         {tab === 'settings' && (
           <div className="space-y-6">
             {configLoading ? (
-              <p className="text-gray-500">Loading config…</p>
+              <p className="text-gray-500 dark:text-gray-400">Loading config…</p>
             ) : config ? (
               <>
-                <GeneralSettings config={config} />
+                <GeneralSettings config={config} dark={dark} onToggleDark={setDark} />
                 <ScheduleConfig config={config} history={history} />
                 <ServerConfig config={config} />
                 <FQDNConfig config={config} />

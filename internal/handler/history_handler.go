@@ -30,12 +30,23 @@ func NewHistoryHandler(runs *store.RunStore) *HistoryHandler {
 //	@Success		200	{array}		store.RunSummary
 //	@Failure		500	{string}	string	"internal error"
 //	@Router			/history [get]
+type historyPage struct {
+	Total int64            `json:"total"`
+	Items []store.RunSummary `json:"items"`
+}
+
 func (h *HistoryHandler) List(w http.ResponseWriter, r *http.Request) {
 	f := store.ListFilter{}
 
 	if v := r.URL.Query().Get("limit"); v != "" {
 		if n, err := strconv.Atoi(v); err == nil && n > 0 && n <= 500 {
 			f.Limit = n
+		}
+	}
+
+	if v := r.URL.Query().Get("offset"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n >= 0 {
+			f.Offset = n
 		}
 	}
 
@@ -59,6 +70,12 @@ func (h *HistoryHandler) List(w http.ResponseWriter, r *http.Request) {
 
 	f.ScheduledOnly = r.URL.Query().Get("scheduled") == "true"
 
+	total, err := h.runs.CountFiltered(f)
+	if err != nil {
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+
 	runs, err := h.runs.List(f)
 	if err != nil {
 		http.Error(w, "internal error", http.StatusInternalServerError)
@@ -67,7 +84,7 @@ func (h *HistoryHandler) List(w http.ResponseWriter, r *http.Request) {
 	if runs == nil {
 		runs = []store.RunSummary{}
 	}
-	writeJSON(w, runs)
+	writeJSON(w, historyPage{Total: total, Items: runs})
 }
 
 // Get godoc

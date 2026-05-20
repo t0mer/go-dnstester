@@ -10,15 +10,15 @@ interface Props {
 }
 
 const STATUS_STYLE: Record<string, string> = {
-  ok: 'bg-green-100 text-green-800',
-  error: 'bg-red-100 text-red-800',
-  timeout: 'bg-yellow-100 text-yellow-800',
+  ok: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+  error: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+  timeout: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
 }
 
 function deltaClass(d: number): string {
-  if (d > 20) return 'text-red-600 font-medium'
-  if (d < -20) return 'text-green-600 font-medium'
-  return 'text-gray-500'
+  if (d > 20) return 'text-red-600 dark:text-red-400 font-medium'
+  if (d < -20) return 'text-green-600 dark:text-green-400 font-medium'
+  return 'text-gray-500 dark:text-gray-400'
 }
 
 export function DNSTable({ results, baseline }: Props) {
@@ -71,7 +71,7 @@ export function DNSTable({ results, baseline }: Props) {
         if (sortField === field) setSortDir(d => (d === 'asc' ? 'desc' : 'asc'))
         else { setSortField(field); setSortDir('asc') }
       }}
-      className={`px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide cursor-pointer hover:bg-gray-50 select-none whitespace-nowrap ${cls}`}
+      className={`px-3 sm:px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 select-none whitespace-nowrap ${cls}`}
     >
       {label}
       {sortField === field && <span className="ml-1">{sortDir === 'asc' ? '↑' : '↓'}</span>}
@@ -80,49 +80,59 @@ export function DNSTable({ results, baseline }: Props) {
 
   return (
     <div>
-      <div className="px-4 py-3 border-b border-gray-200">
+      <div className="px-3 sm:px-4 py-3 border-b border-gray-200 dark:border-gray-700">
         <input
           type="search"
           placeholder="Filter by server, FQDN, or status…"
           value={filter}
           onChange={e => setFilter(e.target.value)}
-          className="w-full max-w-sm px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full input"
         />
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b border-gray-200">
+      <div className="w-full">
+        <table className="w-full text-sm table-fixed">
+          <colgroup>
+            <col className="w-[35%] sm:w-auto" />
+            <col className="w-[25%] sm:w-auto" />
+            <col className="w-[18%] sm:w-auto" />
+            {baselineMap && <col className="hidden sm:table-column" />}
+            <col className="w-[22%] sm:w-auto" />
+            <col className="hidden sm:table-column" />
+          </colgroup>
+          <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
             <tr>
               {col('Server', 'server_name')}
               {col('FQDN', 'fqdn')}
-              {col('Response (ms)', 'response_ms')}
-              {baselineMap && col('Δ vs baseline', 'delta_ms', 'text-purple-600')}
+              {col('ms', 'response_ms')}
+              {baselineMap && col('Δ baseline', 'delta_ms', 'hidden sm:table-cell text-purple-600 dark:text-purple-400')}
               {col('Status', 'status')}
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Answer</th>
+              <th className="hidden sm:table-cell px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Answer</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
             {rows.map((r, i) => (
-              <tr key={i} className="hover:bg-gray-50">
-                <td className="px-4 py-2.5 font-medium text-gray-900 whitespace-nowrap">
-                  {r.server_name}
-                  <span className="ml-1.5 text-xs text-gray-400">{r.server_addr}</span>
+              <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                <td className="px-3 sm:px-4 py-2.5 font-medium text-gray-900 dark:text-gray-100">
+                  <div className="truncate">{r.server_name}</div>
+                  <div className="text-xs text-gray-400 dark:text-gray-500 truncate hidden sm:block">{r.server_addr}</div>
                 </td>
-                <td className="px-4 py-2.5 text-gray-600">{r.fqdn}</td>
-                <td className="px-4 py-2.5 text-gray-700 tabular-nums">{r.response_ms.toFixed(1)}</td>
+                <td className="px-3 sm:px-4 py-2.5 text-gray-600 dark:text-gray-300">
+                  <div className="truncate">{r.fqdn}</div>
+                </td>
+                <td className="px-3 sm:px-4 py-2.5 text-gray-700 dark:text-gray-300 tabular-nums">{r.response_ms.toFixed(1)}</td>
                 {baselineMap && (
-                  <td className={`px-4 py-2.5 tabular-nums ${r.delta_ms !== null ? deltaClass(r.delta_ms) : 'text-gray-300'}`}>
+                  <td className={`hidden sm:table-cell px-4 py-2.5 tabular-nums ${r.delta_ms !== null ? deltaClass(r.delta_ms) : 'text-gray-300 dark:text-gray-600'}`}>
                     {r.delta_ms !== null
                       ? `${r.delta_ms > 0 ? '+' : ''}${r.delta_ms.toFixed(1)}`
                       : '—'}
                   </td>
                 )}
-                <td className="px-4 py-2.5">
-                  <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLE[r.status] ?? 'bg-gray-100 text-gray-600'}`}>
+                <td className="px-3 sm:px-4 py-2.5">
+                  <span className={`inline-flex px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLE[r.status] ?? 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'}`}>
                     {r.status}
                   </span>
                 </td>
-                <td className="px-4 py-2.5 text-gray-500 text-xs">
+                <td className="hidden sm:table-cell px-4 py-2.5 text-gray-500 dark:text-gray-400 text-xs">
                   {r.answers?.join(', ') ?? r.error ?? '—'}
                 </td>
               </tr>
@@ -130,7 +140,7 @@ export function DNSTable({ results, baseline }: Props) {
           </tbody>
         </table>
         {rows.length === 0 && (
-          <p className="text-center py-8 text-gray-400 text-sm">No results match the filter.</p>
+          <p className="text-center py-8 text-gray-400 dark:text-gray-500 text-sm">No results match the filter.</p>
         )}
       </div>
     </div>
