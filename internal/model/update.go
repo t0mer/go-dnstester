@@ -7,4 +7,5 @@ type UpdateInfo struct {
 	ReleaseNotes string `json:"release_notes"`
 	PublishedAt  string `json:"published_at"`
 	ReleaseURL   string `json:"release_url"`
+	DownloadURL  string `json:"download_url,omitempty"`
 }

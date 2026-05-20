@@ -35,4 +35,6 @@ export const api = {
     request('GET', `/compare?a=${idA}&b=${idB}`),
   getVersion: (): Promise<VersionInfo> => request('GET', '/version'),
   checkUpdate: (): Promise<UpdateInfo> => request('GET', '/update/check'),
+  applyUpdate: (downloadURL: string): Promise<{ status: string }> =>
+    request('POST', '/update/apply', { download_url: downloadURL }),
 }

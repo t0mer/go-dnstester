@@ -43,6 +43,7 @@ export interface UpdateInfo {
   release_notes: string
   published_at: string
   release_url: string
+  download_url?: string
 }
 
 export interface QueryResult {

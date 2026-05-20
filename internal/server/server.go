@@ -77,6 +77,7 @@ func (s *Server) Run() error {
 	// Update
 	mux.HandleFunc("GET /api/version", s.updateHandler.Version)
 	mux.HandleFunc("GET /api/update/check", s.updateHandler.Check)
+	mux.HandleFunc("POST /api/update/apply", s.updateHandler.Apply)
 
 	// Prometheus metrics
 	mux.Handle("GET /metrics", promhttp.Handler())
