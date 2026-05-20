@@ -43,9 +43,30 @@ Pre-configured but disabled examples included:
 Automatic runs on a flexible schedule: every N minutes/hours, daily, specific weekdays, weekly, monthly, or once. Results are tagged and available in History and Compare.
 
 ### Settings
-Manage DNS servers (with protocol), FQDNs, and scheduled scans. Backup, restore, export, and import configuration.
+Manage DNS servers (with protocol), FQDNs, and scheduled scans. Backup, restore, export, and import configuration. Authentication is also configured here (see below).
 
 ![Settings](screenshots/settings.png)
+
+### Authentication
+
+Optional authentication support — disabled by default, fully backward-compatible.
+
+#### UI / Browser login
+Enable **Require login** in Settings → Authentication to protect the web UI and API with a username and password. On login, a signed session cookie (HttpOnly, 24-hour TTL) is issued. Passwords are stored as bcrypt hashes — never in plaintext.
+
+#### API token authentication
+Enable **API token authentication** in Settings → Authentication to require a Bearer token for all API access (including from the browser UI). Use this to secure external scripting/automation access without requiring a password.
+
+- Click **Generate token** to create a 256-bit random token. **Copy it immediately — it is shown only once.** The server stores only a SHA-256 hash.
+- Pass the token in every request:
+  ```
+  Authorization: Bearer <token>
+  ```
+- The browser UI stores the token in `localStorage` and sends it automatically — no friction after the first setup.
+- Click **Revoke & disable** to immediately invalidate the token and turn off token enforcement.
+- Click **Regenerate token** to rotate the active token.
+
+Both modes can be combined: browser users log in with username/password; external scripts use the Bearer token.
 
 ### Dark Mode
 Light/dark theme toggle (☀️ / 🌙) in Settings → General. Preference is saved to `localStorage` and respects the system `prefers-color-scheme` on first visit. Applied before first render — no flash.
@@ -184,6 +205,19 @@ cd web/ui && npm run dev
 ## REST API
 
 Interactive Swagger UI at `/api/docs` · OpenAPI spec at `/api/openapi.json`.
+
+When API token authentication is enabled, click the **Authorize** button in Swagger UI and enter your Bearer token. The token persists across page reloads (`persistAuthorization: true`).
+
+### Authentication
+
+| Method | Endpoint | Auth required | Description |
+|--------|----------|---------------|-------------|
+| `GET` | `/api/auth/status` | No | Returns auth configuration and whether the request is authenticated |
+| `POST` | `/api/auth/login` | No | Log in with username + password; sets a session cookie |
+| `POST` | `/api/auth/logout` | No | Clears the session cookie |
+| `PUT` | `/api/auth/settings` | Session | Enable/disable login or token auth; set username and password |
+| `POST` | `/api/auth/token` | Session | Generate a new API token (returned once in plaintext) |
+| `DELETE` | `/api/auth/token` | Session | Revoke the token and disable API token auth |
 
 ### Tests
 

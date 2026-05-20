@@ -26,11 +26,28 @@ export interface ScheduledScan {
   run_at?: string        // RFC3339
 }
 
+export interface AuthConfig {
+  enabled: boolean
+  username: string
+  api_token_enabled: boolean
+  // password_hash and api_token_hash are never returned by the API
+}
+
 export interface Config {
   servers: DNSServer[]
   fqdns: string[]
   schedules: ScheduledScan[]
   auto_update: boolean
+  auth: AuthConfig
+}
+
+export interface AuthStatus {
+  auth_enabled: boolean
+  api_token_enabled: boolean
+  has_credentials: boolean
+  has_token: boolean
+  authenticated: boolean
+  username: string
 }
 
 export interface VersionInfo {
