@@ -27,25 +27,21 @@ export function FQDNConfig({ config }: Props) {
   const remove = (i: number) => setFqdns(f => f.filter((_, idx) => idx !== i))
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg">
-      <div className="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
-        <h2 className="text-base font-semibold text-gray-900">Query FQDNs</h2>
-        <button
-          onClick={() => save.mutate()}
-          disabled={save.isPending}
-          className="btn-primary"
-        >
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
+      <div className="px-5 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+        <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Query FQDNs</h2>
+        <button onClick={() => save.mutate()} disabled={save.isPending} className="btn-primary">
           {save.isPending ? 'Saving…' : 'Save'}
         </button>
       </div>
 
-      <ul className="divide-y divide-gray-100">
+      <ul className="divide-y divide-gray-100 dark:divide-gray-700">
         {fqdns.map((fqdn, i) => (
           <li key={i} className="flex items-center gap-3 px-5 py-3">
-            <span className="flex-1 text-sm font-mono text-gray-700">{fqdn}</span>
+            <span className="flex-1 text-sm font-mono text-gray-700 dark:text-gray-300">{fqdn}</span>
             <button
               onClick={() => remove(i)}
-              className="text-gray-300 hover:text-red-500 transition-colors text-lg leading-none"
+              className="text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 transition-colors text-lg leading-none"
             >
               ×
             </button>
@@ -53,11 +49,9 @@ export function FQDNConfig({ config }: Props) {
         ))}
       </ul>
 
-      <div className="px-5 py-4 border-t border-gray-100 flex items-center gap-2">
+      <div className="px-5 py-4 border-t border-gray-100 dark:border-gray-700 flex items-center gap-2">
         <input
-          type="text"
-          placeholder="example.com"
-          value={newFqdn}
+          type="text" placeholder="example.com" value={newFqdn}
           onChange={e => setNewFqdn(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && add()}
           className="input flex-1"

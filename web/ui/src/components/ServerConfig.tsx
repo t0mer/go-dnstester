@@ -58,39 +58,35 @@ export function ServerConfig({ config }: Props) {
   const remove = (i: number) => setServers(s => s.filter((_, idx) => idx !== i))
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg">
-      <div className="px-5 py-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-3">
-        <h2 className="text-base font-semibold text-gray-900">DNS Servers</h2>
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
+      <div className="px-5 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between flex-wrap gap-3">
+        <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">DNS Servers</h2>
         <div className="flex items-center gap-2 flex-wrap">
           <button onClick={() => backup.mutate()} className="btn-secondary">Backup</button>
           <button onClick={() => restore.mutate()} className="btn-secondary">Restore</button>
           <button onClick={handleExport} className="btn-secondary">Export</button>
           <button onClick={() => fileRef.current?.click()} className="btn-secondary">Import</button>
           <input ref={fileRef} type="file" accept=".json" className="hidden" onChange={handleImport} />
-          <button
-            onClick={() => save.mutate()}
-            disabled={save.isPending}
-            className="btn-primary"
-          >
+          <button onClick={() => save.mutate()} disabled={save.isPending} className="btn-primary">
             {save.isPending ? 'Saving…' : 'Save'}
           </button>
         </div>
       </div>
 
-      <ul className="divide-y divide-gray-100">
+      <ul className="divide-y divide-gray-100 dark:divide-gray-700">
         {servers.map((srv, i) => (
           <li key={i} className="flex items-center gap-3 px-5 py-3">
             <input
               type="checkbox"
               checked={srv.enabled}
               onChange={() => toggle(i)}
-              className="h-4 w-4 text-blue-600 rounded border-gray-300"
+              className="h-4 w-4 text-blue-600 rounded border-gray-300 dark:border-gray-600"
             />
-            <span className="flex-1 text-sm font-medium text-gray-900">{srv.name}</span>
-            <span className="text-sm text-gray-400 font-mono">{srv.address}</span>
+            <span className="flex-1 text-sm font-medium text-gray-900 dark:text-gray-100">{srv.name}</span>
+            <span className="text-sm text-gray-400 dark:text-gray-500 font-mono">{srv.address}</span>
             <button
               onClick={() => remove(i)}
-              className="text-gray-300 hover:text-red-500 transition-colors text-lg leading-none"
+              className="text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 transition-colors text-lg leading-none"
             >
               ×
             </button>
@@ -98,18 +94,10 @@ export function ServerConfig({ config }: Props) {
         ))}
       </ul>
 
-      <div className="px-5 py-4 border-t border-gray-100 flex items-center gap-2">
+      <div className="px-5 py-4 border-t border-gray-100 dark:border-gray-700 flex items-center gap-2">
+        <input type="text" placeholder="Name" value={newName} onChange={e => setNewName(e.target.value)} className="input flex-1" />
         <input
-          type="text"
-          placeholder="Name"
-          value={newName}
-          onChange={e => setNewName(e.target.value)}
-          className="input flex-1"
-        />
-        <input
-          type="text"
-          placeholder="IP / Address"
-          value={newAddr}
+          type="text" placeholder="IP / Address" value={newAddr}
           onChange={e => setNewAddr(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && addServer()}
           className="input flex-1"

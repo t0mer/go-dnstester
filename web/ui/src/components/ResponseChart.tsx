@@ -1,15 +1,9 @@
 import { useMemo } from 'react'
 import {
-  BarChart,
-  Bar,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
+  BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer, Legend,
 } from 'recharts'
+import { useIsDark } from '../hooks/useDarkMode'
 import type { QueryResult } from '../types'
 
 interface Props {
@@ -35,6 +29,8 @@ function avgByServer(results: QueryResult[]) {
 }
 
 export function ResponseChart({ results, baseline }: Props) {
+  const isDark = useIsDark()
+
   const { data, colorMap } = useMemo(() => {
     const current = avgByServer(results)
     const base = baseline ? avgByServer(baseline) : null
@@ -58,17 +54,26 @@ export function ResponseChart({ results, baseline }: Props) {
     return { data, colorMap }
   }, [results, baseline])
 
-  if (data.length === 0) return <p className="text-gray-400 text-sm py-4">No successful results to chart.</p>
+  if (data.length === 0) return <p className="text-gray-400 dark:text-gray-500 text-sm py-4">No successful results to chart.</p>
+
+  const tickColor = isDark ? '#9ca3af' : '#6b7280'
+  const gridColor = isDark ? '#374151' : '#f0f0f0'
+  const tooltipStyle = {
+    fontSize: 12,
+    backgroundColor: isDark ? '#1f2937' : '#fff',
+    borderColor: isDark ? '#374151' : '#e5e7eb',
+    color: isDark ? '#f3f4f6' : '#111827',
+  }
 
   return (
     <ResponsiveContainer width="100%" height={240}>
       <BarChart data={data} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
-        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-        <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-        <YAxis unit="ms" tick={{ fontSize: 12 }} width={52} />
+        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridColor} />
+        <XAxis dataKey="name" tick={{ fontSize: 12, fill: tickColor }} />
+        <YAxis unit="ms" tick={{ fontSize: 12, fill: tickColor }} width={52} />
         <Tooltip
           formatter={(v: number, name: string) => [`${v} ms`, name === 'current' ? 'This run' : 'Baseline']}
-          contentStyle={{ fontSize: 12 }}
+          contentStyle={tooltipStyle}
         />
         {baseline && (
           <Legend formatter={v => v === 'current' ? 'This run' : 'Baseline'} />

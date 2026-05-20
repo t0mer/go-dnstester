@@ -22,21 +22,21 @@ export function HistoryList({ history, schedules, activeId, baselineId, onView, 
     cb(run)
   }
 
-  if (history.length === 0) return <p className="text-gray-400 text-sm p-4">No past runs yet.</p>
+  if (history.length === 0) return <p className="text-gray-400 dark:text-gray-500 text-sm p-4">No past runs yet.</p>
 
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
-        <thead className="bg-gray-50 border-b border-gray-200">
+        <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
           <tr>
-            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Time</th>
-            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Queries</th>
-            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Success</th>
-            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Avg (ms)</th>
+            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Time</th>
+            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Queries</th>
+            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Success</th>
+            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Avg (ms)</th>
             <th className="px-4 py-3" />
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-100">
+        <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
           {history.map(run => {
             const isActive   = run.id === activeId
             const isBaseline = run.id === baselineId
@@ -46,24 +46,24 @@ export function HistoryList({ history, schedules, activeId, baselineId, onView, 
               : 0
 
             return (
-              <tr key={run.id} className={`hover:bg-gray-50 ${isActive ? 'bg-blue-50' : ''}`}>
+              <tr key={run.id} className={`hover:bg-gray-50 dark:hover:bg-gray-800 ${isActive ? 'bg-blue-50 dark:bg-blue-950/50' : ''}`}>
                 <td className="px-4 py-2.5 whitespace-nowrap">
-                  <span className="text-gray-800">{timeLabel(run.started_at)}</span>
+                  <span className="text-gray-800 dark:text-gray-200">{timeLabel(run.started_at)}</span>
                   {scheduleName && (
-                    <span className="ml-2 text-xs text-blue-600 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">
+                    <span className="ml-2 text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 px-1.5 py-0.5 rounded">
                       🕐 {scheduleName}
                     </span>
                   )}
-                  {isActive    && <span className="ml-2 text-xs text-blue-600 font-medium">viewing</span>}
-                  {isBaseline  && <span className="ml-2 text-xs text-purple-600 font-medium">baseline</span>}
+                  {isActive    && <span className="ml-2 text-xs text-blue-600 dark:text-blue-400 font-medium">viewing</span>}
+                  {isBaseline  && <span className="ml-2 text-xs text-purple-600 dark:text-purple-400 font-medium">baseline</span>}
                 </td>
-                <td className="px-4 py-2.5 tabular-nums text-gray-600">{run.total_queries}</td>
+                <td className="px-4 py-2.5 tabular-nums text-gray-600 dark:text-gray-300">{run.total_queries}</td>
                 <td className="px-4 py-2.5 tabular-nums">
-                  <span className={pct === 100 ? 'text-green-600' : pct >= 80 ? 'text-yellow-600' : 'text-red-600'}>
+                  <span className={pct === 100 ? 'text-green-600 dark:text-green-400' : pct >= 80 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'}>
                     {run.success_count}/{run.total_queries} ({pct}%)
                   </span>
                 </td>
-                <td className="px-4 py-2.5 tabular-nums text-gray-600">
+                <td className="px-4 py-2.5 tabular-nums text-gray-600 dark:text-gray-300">
                   {run.avg_response_ms > 0 ? `${run.avg_response_ms.toFixed(0)} ms` : '—'}
                 </td>
                 <td className="px-4 py-2.5">
@@ -76,11 +76,11 @@ export function HistoryList({ history, schedules, activeId, baselineId, onView, 
                       View
                     </button>
                     {isBaseline ? (
-                      <button onClick={() => onSetBaseline(null)} className="text-xs px-2.5 py-1 rounded border border-purple-300 text-purple-700 hover:bg-purple-50 transition-colors">
+                      <button onClick={() => onSetBaseline(null)} className="text-xs px-2.5 py-1 rounded border border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950 transition-colors">
                         Clear
                       </button>
                     ) : (
-                      <button onClick={() => load(run, r => onSetBaseline(r))} className="text-xs px-2.5 py-1 rounded border border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors">
+                      <button onClick={() => load(run, r => onSetBaseline(r))} className="text-xs px-2.5 py-1 rounded border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                         Baseline
                       </button>
                     )}

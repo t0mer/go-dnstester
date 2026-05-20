@@ -172,7 +172,7 @@ function WeekdayPicker({ value, onChange }: { value: number[]; onChange: (v: num
           className={`px-2.5 py-1 rounded text-sm font-medium border transition-colors ${
             value.includes(d)
               ? 'bg-blue-600 text-white border-blue-600'
-              : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+              : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
           }`}
         >
           {label}
@@ -335,11 +335,11 @@ export function ScheduleConfig({ config, history }: Props) {
     )[0]
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg">
-      <div className="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
+      <div className="px-5 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
         <div>
-          <h2 className="text-base font-semibold text-gray-900">Scheduled Scans</h2>
-          <p className="text-xs text-gray-500 mt-0.5">
+          <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Scheduled Scans</h2>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
             Automatically run tests on a schedule. Results are tagged and available in History &amp; Compare.
           </p>
         </div>
@@ -348,8 +348,8 @@ export function ScheduleConfig({ config, history }: Props) {
 
       {/* Add form */}
       {editingId === 'new' && (
-        <div className="px-5 py-4 bg-blue-50 border-b border-blue-100">
-          <p className="text-sm font-semibold text-blue-800 mb-3">New schedule</p>
+        <div className="px-5 py-4 bg-blue-50 dark:bg-blue-950/50 border-b border-blue-100 dark:border-blue-900">
+          <p className="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-3">New schedule</p>
           <ScheduleFormFields form={form} setForm={setForm} />
           <div className="flex gap-2 mt-3">
             <button onClick={commitForm} disabled={save.isPending || !form.name.trim()} className="btn-primary">
@@ -361,12 +361,12 @@ export function ScheduleConfig({ config, history }: Props) {
       )}
 
       {schedules.length === 0 && editingId !== 'new' && (
-        <p className="text-sm text-gray-400 px-5 py-6 text-center">
+        <p className="text-sm text-gray-400 dark:text-gray-500 px-5 py-6 text-center">
           No schedules yet. Click <strong>+ Add schedule</strong> to create one.
         </p>
       )}
 
-      <ul className="divide-y divide-gray-100">
+      <ul className="divide-y divide-gray-100 dark:divide-gray-700">
         {schedules.map(sc => {
           const isEditing = editingId === sc.id
           const lastRun = lastRunFor(sc.id)
@@ -375,8 +375,8 @@ export function ScheduleConfig({ config, history }: Props) {
           return (
             <li key={sc.id}>
               {isEditing ? (
-                <div className="px-5 py-4 bg-yellow-50 border-b border-yellow-100">
-                  <p className="text-sm font-semibold text-yellow-800 mb-3">Editing "{sc.name}"</p>
+                <div className="px-5 py-4 bg-yellow-50 dark:bg-yellow-950/50 border-b border-yellow-100 dark:border-yellow-900">
+                  <p className="text-sm font-semibold text-yellow-800 dark:text-yellow-300 mb-3">Editing "{sc.name}"</p>
                   <ScheduleFormFields form={form} setForm={setForm} />
                   <div className="flex gap-2 mt-3">
                     <button onClick={commitForm} disabled={save.isPending || !form.name.trim()} className="btn-primary">
@@ -391,16 +391,16 @@ export function ScheduleConfig({ config, history }: Props) {
                     type="checkbox"
                     checked={sc.enabled}
                     onChange={() => toggleEnabled(sc.id)}
-                    className="h-4 w-4 text-blue-600 rounded border-gray-300 flex-shrink-0"
+                    className="h-4 w-4 text-blue-600 rounded border-gray-300 dark:border-gray-600 flex-shrink-0"
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{sc.name}</p>
-                    <p className="text-xs text-gray-500">{describeSchedule(sc)}</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{sc.name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{describeSchedule(sc)}</p>
                   </div>
-                  <div className="text-right text-xs text-gray-400 hidden sm:block flex-shrink-0">
-                    {nextRun && <p>Next: <span className="text-gray-600">{relTime(nextRun)}</span></p>}
+                  <div className="text-right text-xs text-gray-400 dark:text-gray-500 hidden sm:block flex-shrink-0">
+                    {nextRun && <p>Next: <span className="text-gray-600 dark:text-gray-300">{relTime(nextRun)}</span></p>}
                     {lastRun && (
-                      <p>Last: <span className="text-gray-600">
+                      <p>Last: <span className="text-gray-600 dark:text-gray-300">
                         {new Date(lastRun.started_at).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}
                       </span></p>
                     )}
@@ -409,7 +409,7 @@ export function ScheduleConfig({ config, history }: Props) {
                     <button onClick={() => startEdit(sc)} className="btn-secondary text-xs px-2 py-1">Edit</button>
                     <button
                       onClick={() => remove(sc.id)}
-                      className="text-xs px-2 py-1 rounded border border-red-200 text-red-600 hover:bg-red-50 transition-colors"
+                      className="text-xs px-2 py-1 rounded border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 transition-colors"
                     >
                       Delete
                     </button>
