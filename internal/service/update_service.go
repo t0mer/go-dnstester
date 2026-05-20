@@ -23,6 +23,10 @@ func NewUpdateService(currentVersion string) *UpdateService {
 	}
 }
 
+func (s *UpdateService) CurrentVersion() string {
+	return s.currentVersion
+}
+
 func (s *UpdateService) Check() (*model.UpdateInfo, error) {
 	req, err := http.NewRequest(http.MethodGet, githubReleasesURL, nil)
 	if err != nil {

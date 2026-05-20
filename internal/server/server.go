@@ -74,7 +74,8 @@ func (s *Server) Run() error {
 	mux.HandleFunc("PUT /api/schedules/{id}", s.scheduleHandler.Update)
 	mux.HandleFunc("DELETE /api/schedules/{id}", s.scheduleHandler.Delete)
 
-	// Update check
+	// Update
+	mux.HandleFunc("GET /api/version", s.updateHandler.Version)
 	mux.HandleFunc("GET /api/update/check", s.updateHandler.Check)
 
 	// Prometheus metrics

@@ -57,6 +57,12 @@ export default function App() {
     if (latestRun && !activeRun) setActiveRun(latestRun)
   }, [latestRun]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  const { data: versionInfo } = useQuery({
+    queryKey: ['version'],
+    queryFn: api.getVersion,
+    staleTime: Infinity,
+  })
+
   const { data: config, isLoading: configLoading } = useQuery({
     queryKey: ['config'],
     queryFn: api.getConfig,
@@ -125,6 +131,9 @@ export default function App() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-semibold text-gray-900">DNS Tester</h1>
+            {versionInfo && (
+              <span className="text-xs text-gray-400 font-mono">{versionInfo.version}</span>
+            )}
             {showUpdateBadge && (
               <button
                 onClick={() => setUpdateModalOpen(true)}

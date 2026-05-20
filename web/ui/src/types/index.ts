@@ -32,6 +32,10 @@ export interface Config {
   auto_update: boolean
 }
 
+export interface VersionInfo {
+  version: string
+}
+
 export interface UpdateInfo {
   current: string
   latest: string
