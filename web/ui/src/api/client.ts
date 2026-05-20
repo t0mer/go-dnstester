@@ -1,4 +1,4 @@
-import type { Config, TestRun, CompareResult, UpdateInfo, VersionInfo, PagedHistory } from '../types'
+import type { Config, TestRun, CompareResult, UpdateInfo, VersionInfo, PagedHistory, TrendPoint } from '../types'
 
 const BASE = '/api'
 
@@ -33,6 +33,8 @@ export const api = {
   getRun: (id: string): Promise<TestRun> => request('GET', `/history/${id}`),
   compare: (idA: string, idB: string): Promise<CompareResult> =>
     request('GET', `/compare?a=${idA}&b=${idB}`),
+  getTrends: (hours = 168): Promise<TrendPoint[]> =>
+    request('GET', `/trends?hours=${hours}`),
   getVersion: (): Promise<VersionInfo> => request('GET', '/version'),
   checkUpdate: (): Promise<UpdateInfo> => request('GET', '/update/check'),
   applyUpdate: (downloadURL: string): Promise<{ status: string }> =>

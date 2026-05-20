@@ -82,13 +82,14 @@ func (p *program) run() error {
 	historyHandler := handler.NewHistoryHandler(runs)
 	scheduleHandler := handler.NewScheduleHandler(cfgSvc)
 	updateHandler := handler.NewUpdateHandler(updateSvc)
+	trendsHandler := handler.NewTrendsHandler(runs)
 
 	ui, err := fs.Sub(webembed.Assets, "dist")
 	if err != nil {
 		return fmt.Errorf("ui assets: %w", err)
 	}
 
-	p.web = httpsrv.New(p.port, cfgHandler, testHandler, historyHandler, scheduleHandler, updateHandler, ui)
+	p.web = httpsrv.New(p.port, cfgHandler, testHandler, historyHandler, scheduleHandler, updateHandler, trendsHandler, ui)
 	return p.web.Run()
 }
 

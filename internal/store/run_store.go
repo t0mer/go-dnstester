@@ -235,6 +235,75 @@ func (s *RunStore) Get(id string) (*model.TestRun, error) {
 	return &run, pRows.Err()
 }
 
+// QueryTrends returns per-server average response times bucketed by time.
+// hours controls the look-back window; hourly buckets are used for ≤48 h,
+// daily buckets otherwise. Bucketing is done in Go to avoid SQLite strftime
+// format-string compatibility issues with different driver time encodings.
+func (s *RunStore) QueryTrends(hours int) ([]model.TrendPoint, error) {
+	from := time.Now().Add(-time.Duration(hours) * time.Hour)
+	hourly := hours <= 48
+
+	rows, err := s.db.Query(`
+		SELECT d.server_name, d.server_addr, d.protocol,
+		       r.started_at, d.response_ms
+		FROM test_runs r
+		JOIN dns_results d ON d.run_id = r.id
+		WHERE r.started_at >= ? AND d.status = 'ok'
+		ORDER BY r.started_at ASC
+	`, from)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	type accKey struct{ server, addr, proto, bucket string }
+	type acc struct {
+		total float64
+		count int
+	}
+	accMap := map[accKey]*acc{}
+	var keyOrder []accKey
+
+	for rows.Next() {
+		var serverName, serverAddr, protocol string
+		var startedAt time.Time
+		var responseMs float64
+		if err := rows.Scan(&serverName, &serverAddr, &protocol, &startedAt, &responseMs); err != nil {
+			return nil, err
+		}
+		var bucket string
+		if hourly {
+			bucket = startedAt.UTC().Format("2006-01-02 15:00")
+		} else {
+			bucket = startedAt.UTC().Format("2006-01-02")
+		}
+		k := accKey{serverName, serverAddr, protocol, bucket}
+		if _, ok := accMap[k]; !ok {
+			accMap[k] = &acc{}
+			keyOrder = append(keyOrder, k)
+		}
+		accMap[k].total += responseMs
+		accMap[k].count++
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	points := make([]model.TrendPoint, 0, len(keyOrder))
+	for _, k := range keyOrder {
+		a := accMap[k]
+		points = append(points, model.TrendPoint{
+			ServerName:  k.server,
+			ServerAddr:  k.addr,
+			Protocol:    k.proto,
+			Bucket:      k.bucket,
+			AvgMs:       math.Round(a.total/float64(a.count)*100) / 100,
+			SampleCount: a.count,
+		})
+	}
+	return points, nil
+}
+
 // ListFull returns the last n test runs with their full DNS and ping results.
 func (s *RunStore) ListFull(n int) ([]*model.TestRun, error) {
 	summaries, err := s.List(ListFilter{Limit: n, NoTimeFilter: true})

@@ -13,12 +13,13 @@ import { HistoryList } from './components/HistoryList'
 import { CompareView } from './components/CompareView'
 import { GeneralSettings } from './components/GeneralSettings'
 import { UpdateModal } from './components/UpdateModal'
+import { TrendsView } from './components/TrendsView'
 import type { TestRun } from './types'
 
 const SKIPPED_VERSION_KEY = 'dnstester_skipped_version'
 
-type Tab = 'results' | 'compare' | 'history' | 'settings'
-const VALID_TABS: Tab[] = ['results', 'compare', 'history', 'settings']
+type Tab = 'results' | 'compare' | 'history' | 'trends' | 'settings'
+const VALID_TABS: Tab[] = ['results', 'compare', 'history', 'trends', 'settings']
 
 function tabFromHash(): Tab {
   const h = window.location.hash.slice(1) as Tab
@@ -114,9 +115,10 @@ export default function App() {
   }
 
   const TABS: { id: Tab; label: string }[] = [
-    { id: 'results', label: 'Results' },
-    { id: 'compare', label: 'Compare' },
-    { id: 'history', label: 'History' },
+    { id: 'results',  label: 'Results'  },
+    { id: 'compare',  label: 'Compare'  },
+    { id: 'history',  label: 'History'  },
+    { id: 'trends',   label: 'Trends'   },
     { id: 'settings', label: 'Settings' },
   ]
 
@@ -236,6 +238,8 @@ export default function App() {
             />
           </div>
         )}
+
+        {tab === 'trends' && <TrendsView />}
 
         {tab === 'settings' && (
           <div className="space-y-6">
