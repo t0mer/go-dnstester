@@ -17,10 +17,97 @@ const openapiSpec = `{
     { "name": "History",  "description": "Browse and compare historical test runs" },
     { "name": "Trends",   "description": "Aggregated response-time trends over time" },
     { "name": "Settings", "description": "Manage DNS servers, FQDNs, schedules, and global config" },
+    { "name": "Auth",     "description": "Authentication: login, logout, token management" },
     { "name": "Updates",  "description": "Version info and in-app self-update" },
     { "name": "Monitoring","description": "Prometheus metrics export" }
   ],
+  "security": [
+    { "BearerAuth": [] }
+  ],
   "paths": {
+    "/auth/status": {
+      "get": {
+        "summary": "Auth status",
+        "description": "Returns whether authentication is enabled and whether the current request is authenticated. Always public — used by the UI to decide whether to show a login prompt.",
+        "operationId": "getAuthStatus",
+        "tags": ["Auth"],
+        "security": [],
+        "responses": {
+          "200": { "description": "Auth status", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthStatus" } } } }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "Log in",
+        "description": "Validates username and password. On success, sets an HttpOnly session cookie valid for 24 hours.",
+        "operationId": "login",
+        "tags": ["Auth"],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LoginRequest" } } }
+        },
+        "responses": {
+          "200": { "description": "Login successful", "content": { "application/json": { "schema": { "type": "object", "properties": { "ok": { "type": "boolean" } } } } } },
+          "400": { "description": "Auth not enabled" },
+          "401": { "description": "Invalid credentials" }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "summary": "Log out",
+        "description": "Clears the session cookie. Always succeeds, even if no session is active.",
+        "operationId": "logout",
+        "tags": ["Auth"],
+        "security": [],
+        "responses": {
+          "204": { "description": "Logged out" }
+        }
+      }
+    },
+    "/auth/settings": {
+      "put": {
+        "summary": "Update auth settings",
+        "description": "Enable or disable login requirements and API token auth. Requires an active browser session (not a Bearer token).",
+        "operationId": "updateAuthSettings",
+        "tags": ["Auth"],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthSettingsRequest" } } }
+        },
+        "responses": {
+          "200": { "description": "Updated auth settings", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthStatus" } } } },
+          "400": { "description": "Validation error (empty username, short password, etc.)" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/auth/token": {
+      "post": {
+        "summary": "Generate API token",
+        "description": "Creates a new API Bearer token. The plaintext is returned **once** — store it immediately. The server only keeps a hash. Requires an active browser session.",
+        "operationId": "generateToken",
+        "tags": ["Auth"],
+        "responses": {
+          "200": { "description": "Plaintext token (shown once)", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TokenResponse" } } } },
+          "401": { "description": "Unauthorized" },
+          "500": { "description": "Internal error" }
+        }
+      },
+      "delete": {
+        "summary": "Revoke API token",
+        "description": "Removes the stored token hash and disables API token auth. Requires an active browser session.",
+        "operationId": "revokeToken",
+        "tags": ["Auth"],
+        "responses": {
+          "204": { "description": "Token revoked" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+
     "/metrics": {
       "get": {
         "summary": "Prometheus metrics",
@@ -334,7 +421,48 @@ const openapiSpec = `{
   },
 
   "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "API token generated from Settings → Authentication → Generate token. Required when API token authentication is enabled."
+      }
+    },
     "schemas": {
+      "AuthStatus": {
+        "type": "object",
+        "properties": {
+          "auth_enabled":      { "type": "boolean", "description": "True when username/password login is required" },
+          "api_token_enabled": { "type": "boolean", "description": "True when Bearer token auth is active" },
+          "has_credentials":   { "type": "boolean", "description": "True when a password hash is stored" },
+          "has_token":         { "type": "boolean", "description": "True when a token hash is stored" },
+          "authenticated":     { "type": "boolean", "description": "True when the current request is authenticated (or no auth is configured)" },
+          "username":          { "type": "string",  "description": "Configured username (empty when auth is disabled)" }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": ["username", "password"],
+        "properties": {
+          "username": { "type": "string" },
+          "password": { "type": "string", "format": "password" }
+        }
+      },
+      "AuthSettingsRequest": {
+        "type": "object",
+        "properties": {
+          "enabled":           { "type": "boolean", "description": "Enable username/password login" },
+          "username":          { "type": "string" },
+          "password":          { "type": "string", "format": "password", "description": "Leave blank to keep the current password" },
+          "api_token_enabled": { "type": "boolean", "description": "Enable Bearer token authentication" }
+        }
+      },
+      "TokenResponse": {
+        "type": "object",
+        "properties": {
+          "token": { "type": "string", "description": "Plaintext API token. Copy it now — it will not be shown again." }
+        }
+      },
       "DNSServer": {
         "type": "object",
         "required": ["name", "address", "enabled"],

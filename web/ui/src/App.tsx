@@ -12,6 +12,9 @@ import { ScheduleConfig } from './components/ScheduleConfig'
 import { HistoryList } from './components/HistoryList'
 import { CompareView } from './components/CompareView'
 import { GeneralSettings } from './components/GeneralSettings'
+import { AuthSettings } from './components/AuthSettings'
+import { LoginPage } from './components/LoginPage'
+import { TokenGatePage } from './components/TokenGatePage'
 import { UpdateModal } from './components/UpdateModal'
 import { TrendsView } from './components/TrendsView'
 import type { TestRun } from './types'
@@ -42,12 +45,34 @@ export default function App() {
     window.history.replaceState(null, '', `#${t}`)
   }
 
-  // Keep tab in sync when the user navigates with browser back/forward.
   useEffect(() => {
     const onHashChange = () => _setTab(tabFromHash())
     window.addEventListener('hashchange', onHashChange)
     return () => window.removeEventListener('hashchange', onHashChange)
   }, [])
+
+  // Auth status — checked on load and whenever a 401 is received.
+  const { data: authStatus, isLoading: authLoading } = useQuery({
+    queryKey: ['auth-status'],
+    queryFn: api.getAuthStatus,
+    retry: false,
+    staleTime: 60_000,
+    refetchInterval: 60_000,
+  })
+
+  // Re-check auth whenever the API emits a 401.
+  useEffect(() => {
+    const handler = () => qc.invalidateQueries({ queryKey: ['auth-status'] })
+    window.addEventListener('auth:unauthorized', handler)
+    return () => window.removeEventListener('auth:unauthorized', handler)
+  }, [qc])
+
+  const handleLoginSuccess = () => qc.invalidateQueries({ queryKey: ['auth-status'] })
+
+  const handleLogout = async () => {
+    await api.logout()
+    qc.invalidateQueries({ queryKey: ['auth-status'] })
+  }
 
   // Auto-load the latest scan so Results is never blank on first visit.
   const { data: latestRun } = useQuery({
@@ -55,6 +80,7 @@ export default function App() {
     queryFn: api.getLatest,
     retry: false,
     staleTime: Infinity,
+    enabled: authStatus?.authenticated ?? true,
   })
   useEffect(() => {
     if (latestRun && !activeRun) setActiveRun(latestRun)
@@ -64,23 +90,24 @@ export default function App() {
     queryKey: ['version'],
     queryFn: api.getVersion,
     staleTime: Infinity,
+    enabled: authStatus?.authenticated ?? true,
   })
 
   const { data: config, isLoading: configLoading } = useQuery({
     queryKey: ['config'],
     queryFn: api.getConfig,
+    enabled: authStatus?.authenticated ?? true,
   })
 
   const { data: updateInfo } = useQuery({
     queryKey: ['update-check'],
     queryFn: api.checkUpdate,
-    enabled: !!(config?.auto_update),
+    enabled: !!(config?.auto_update) && (authStatus?.authenticated ?? true),
     staleTime: 4 * 60 * 60 * 1000,
     refetchInterval: 4 * 60 * 60 * 1000,
     retry: false,
   })
 
-  // Auto-open modal when a new (unskipped) update is detected.
   useEffect(() => {
     if (updateInfo?.available && updateInfo.latest !== skippedVersion) {
       setUpdateModalOpen(true)
@@ -100,6 +127,7 @@ export default function App() {
     queryKey: ['history'],
     queryFn: () => api.listHistory(200),
     refetchInterval: 15_000,
+    enabled: authStatus?.authenticated ?? true,
   })
   const history = historyData?.items ?? []
 
@@ -121,6 +149,26 @@ export default function App() {
     { id: 'trends',   label: 'Trends'   },
     { id: 'settings', label: 'Settings' },
   ]
+
+  // Show login page while auth is loading or when auth is required but not authenticated.
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
+        <p className="text-sm text-gray-400">Loading…</p>
+      </div>
+    )
+  }
+
+  if (authStatus && !authStatus.authenticated) {
+    // Token-only mode: no login required but a Bearer token must be stored locally.
+    if (!authStatus.auth_enabled && authStatus.api_token_enabled) {
+      return <TokenGatePage onSuccess={handleLoginSuccess} />
+    }
+    // Full login mode.
+    if (authStatus.auth_enabled) {
+      return <LoginPage onSuccess={handleLoginSuccess} />
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors">
@@ -161,7 +209,18 @@ export default function App() {
             </p>
           )}
         </div>
-        <TestRunner onResult={handleResult} />
+        <div className="flex items-center gap-3">
+          <TestRunner onResult={handleResult} />
+          {authStatus?.auth_enabled && (
+            <button
+              onClick={handleLogout}
+              className="btn-secondary text-sm"
+              title={`Signed in as ${authStatus.username}`}
+            >
+              Sign out
+            </button>
+          )}
+        </div>
       </header>
 
       <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-2 sm:px-6 overflow-x-auto">
@@ -248,6 +307,7 @@ export default function App() {
             ) : config ? (
               <>
                 <GeneralSettings config={config} dark={dark} onToggleDark={setDark} />
+                <AuthSettings />
                 <ScheduleConfig config={config} history={history} />
                 <ServerConfig config={config} />
                 <FQDNConfig config={config} />

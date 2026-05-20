@@ -5,6 +5,15 @@ type Config struct {
 	FQDNs      []string        `json:"fqdns"`
 	Schedules  []ScheduledScan `json:"schedules"`
 	AutoUpdate bool            `json:"auto_update"`
+	Auth       AuthConfig      `json:"auth"`
+}
+
+type AuthConfig struct {
+	Enabled         bool   `json:"enabled"`
+	Username        string `json:"username"`
+	PasswordHash    string `json:"password_hash"`
+	APITokenEnabled bool   `json:"api_token_enabled"`
+	APITokenHash    string `json:"api_token_hash"`
 }
 
 // ScheduledScan defines when an automatic test run is triggered.

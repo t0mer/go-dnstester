@@ -12,6 +12,7 @@ import (
 
 	ossvc "github.com/kardianos/service"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/tomerklein/dnstester/internal/auth"
 	"github.com/tomerklein/dnstester/internal/config"
 	"github.com/tomerklein/dnstester/internal/handler"
 	intmetrics "github.com/tomerklein/dnstester/internal/metrics"
@@ -67,6 +68,7 @@ func (p *program) run() error {
 
 	runs := store.NewRunStore(db)
 	cfgSvc := config.NewService(configDir)
+	authSvc := auth.NewService()
 	dnsSvc := intsvc.NewDNSService()
 	pingSvc := intsvc.NewPingService()
 	testSvc := intsvc.NewTestService(dnsSvc, pingSvc)
@@ -83,13 +85,15 @@ func (p *program) run() error {
 	scheduleHandler := handler.NewScheduleHandler(cfgSvc)
 	updateHandler := handler.NewUpdateHandler(updateSvc)
 	trendsHandler := handler.NewTrendsHandler(runs)
+	authHandler := handler.NewAuthHandler(cfgSvc, authSvc)
+	guard := auth.Guard(cfgSvc, authSvc)
 
 	ui, err := fs.Sub(webembed.Assets, "dist")
 	if err != nil {
 		return fmt.Errorf("ui assets: %w", err)
 	}
 
-	p.web = httpsrv.New(p.port, cfgHandler, testHandler, historyHandler, scheduleHandler, updateHandler, trendsHandler, ui)
+	p.web = httpsrv.New(p.port, cfgHandler, testHandler, historyHandler, scheduleHandler, updateHandler, trendsHandler, authHandler, guard, ui)
 	return p.web.Run()
 }
 

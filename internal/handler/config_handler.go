@@ -23,20 +23,35 @@ func (h *ConfigHandler) Get(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
-	writeJSON(w, cfg)
+	// Strip secret fields before returning — auth secrets are managed via /api/auth/*.
+	safe := *cfg
+	safe.Auth.PasswordHash = ""
+	safe.Auth.APITokenHash = ""
+	writeJSON(w, safe)
 }
 
 func (h *ConfigHandler) Update(w http.ResponseWriter, r *http.Request) {
-	var cfg model.Config
-	if err := json.NewDecoder(r.Body).Decode(&cfg); err != nil {
+	var incoming model.Config
+	if err := json.NewDecoder(r.Body).Decode(&incoming); err != nil {
 		http.Error(w, "invalid request", http.StatusBadRequest)
 		return
 	}
-	if err := h.svc.Save(&cfg); err != nil {
+	// Auth config is managed exclusively via /api/auth/*; preserve it from disk.
+	existing, err := h.svc.Load()
+	if err != nil {
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
-	writeJSON(w, cfg)
+	incoming.Auth = existing.Auth
+	if err := h.svc.Save(&incoming); err != nil {
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+	// Return response without secret fields.
+	safe := incoming
+	safe.Auth.PasswordHash = ""
+	safe.Auth.APITokenHash = ""
+	writeJSON(w, safe)
 }
 
 func (h *ConfigHandler) Backup(w http.ResponseWriter, r *http.Request) {

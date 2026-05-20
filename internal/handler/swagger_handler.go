@@ -22,7 +22,8 @@ const swaggerUI = `<!DOCTYPE html>
       presets: [SwaggerUIBundle.presets.apis, SwaggerUIBundle.SwaggerUIStandalonePreset],
       layout: 'BaseLayout',
       deepLinking: true,
-      tryItOutEnabled: true
+      tryItOutEnabled: true,
+      persistAuthorization: true
     });
   </script>
 </body>
