@@ -2,7 +2,7 @@ package service
 
 import (
 	"net"
-	"strings"
+	"net/url"
 	"time"
 
 	probing "github.com/prometheus-community/pro-bing"
@@ -17,18 +17,44 @@ func NewPingService() *PingService {
 	return &PingService{timeout: 5 * time.Second}
 }
 
+// pingTargets returns the ICMP host and the TCP address to use as fallback.
+func pingTargets(server model.DNSServer) (icmpHost, tcpAddr string) {
+	switch server.Protocol {
+	case "doh":
+		u, err := url.Parse(server.Address)
+		if err != nil {
+			return server.Address, server.Address
+		}
+		host := u.Hostname()
+		port := u.Port()
+		if port == "" {
+			port = "443"
+		}
+		return host, net.JoinHostPort(host, port)
+	case "dot":
+		addr := server.Address
+		if host, port, err := net.SplitHostPort(addr); err == nil {
+			return host, net.JoinHostPort(host, port)
+		}
+		return addr, net.JoinHostPort(addr, "853")
+	default:
+		addr := server.Address
+		if host, _, err := net.SplitHostPort(addr); err == nil {
+			return host, addr
+		}
+		return addr, net.JoinHostPort(addr, "53")
+	}
+}
+
 func (s *PingService) Ping(server model.DNSServer) model.PingResult {
 	result := model.PingResult{
 		ServerName: server.Name,
 		ServerAddr: server.Address,
 	}
 
-	addr := server.Address
-	if host, _, err := net.SplitHostPort(addr); err == nil {
-		addr = host
-	}
+	icmpHost, _ := pingTargets(server)
 
-	pinger, err := probing.NewPinger(addr)
+	pinger, err := probing.NewPinger(icmpHost)
 	if err != nil {
 		return s.tcpPing(server)
 	}
@@ -58,13 +84,10 @@ func (s *PingService) tcpPing(server model.DNSServer) model.PingResult {
 		ServerAddr: server.Address,
 	}
 
-	addr := server.Address
-	if !strings.Contains(addr, ":") {
-		addr += ":53"
-	}
+	_, tcpAddr := pingTargets(server)
 
 	start := time.Now()
-	conn, err := net.DialTimeout("tcp", addr, s.timeout)
+	conn, err := net.DialTimeout("tcp", tcpAddr, s.timeout)
 	if err != nil {
 		result.Status = "error"
 		result.Error = "unreachable"

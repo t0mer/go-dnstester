@@ -9,6 +9,11 @@ interface Props {
   baseline?: QueryResult[]
 }
 
+const PROTOCOL_BADGE: Record<string, string> = {
+  dot: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+  doh: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
+}
+
 const STATUS_STYLE: Record<string, string> = {
   ok: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
   error: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
@@ -113,7 +118,14 @@ export function DNSTable({ results, baseline }: Props) {
             {rows.map((r, i) => (
               <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                 <td className="px-3 sm:px-4 py-2.5 font-medium text-gray-900 dark:text-gray-100">
-                  <div className="truncate">{r.server_name}</div>
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="truncate">{r.server_name}</span>
+                    {r.protocol && r.protocol !== 'udp' && (
+                      <span className={`flex-shrink-0 text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded ${PROTOCOL_BADGE[r.protocol] ?? 'bg-gray-100 text-gray-500'}`}>
+                        {r.protocol}
+                      </span>
+                    )}
+                  </div>
                   <div className="text-xs text-gray-400 dark:text-gray-500 truncate hidden sm:block">{r.server_addr}</div>
                 </td>
                 <td className="px-3 sm:px-4 py-2.5 text-gray-600 dark:text-gray-300">

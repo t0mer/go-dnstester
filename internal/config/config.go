@@ -10,6 +10,7 @@ import (
 )
 
 var defaultServers = []model.DNSServer{
+	// Plain UDP/53
 	{Name: "Cloudflare", Address: "1.1.1.1", Enabled: true},
 	{Name: "Cloudflare Alt", Address: "1.0.0.1", Enabled: true},
 	{Name: "Google", Address: "8.8.8.8", Enabled: true},
@@ -18,6 +19,15 @@ var defaultServers = []model.DNSServer{
 	{Name: "OpenDNS", Address: "208.67.222.222", Enabled: true},
 	{Name: "OpenDNS Alt", Address: "208.67.220.220", Enabled: true},
 	{Name: "AdGuard", Address: "94.140.14.14", Enabled: true},
+	// DNS over TLS (port 853) — disabled by default, enable to compare
+	{Name: "Cloudflare DoT", Address: "1.1.1.1", Protocol: "dot", Enabled: false},
+	{Name: "Google DoT", Address: "8.8.8.8", Protocol: "dot", Enabled: false},
+	{Name: "Quad9 DoT", Address: "9.9.9.9", Protocol: "dot", Enabled: false},
+	// DNS over HTTPS — disabled by default, enable to compare
+	{Name: "Cloudflare DoH", Address: "https://cloudflare-dns.com/dns-query", Protocol: "doh", Enabled: false},
+	{Name: "Google DoH", Address: "https://dns.google/dns-query", Protocol: "doh", Enabled: false},
+	{Name: "Quad9 DoH", Address: "https://dns.quad9.net/dns-query", Protocol: "doh", Enabled: false},
+	{Name: "AdGuard DoH", Address: "https://dns.adguard-dns.com/dns-query", Protocol: "doh", Enabled: false},
 }
 
 var defaultFQDNs = []string{

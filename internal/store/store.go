@@ -62,6 +62,7 @@ func migrate(db *sql.DB) error {
 	// Additive column migrations — errors mean the column already exists; safe to ignore.
 	addColumn(db, "test_runs", "is_scheduled", "INTEGER NOT NULL DEFAULT 0")
 	addColumn(db, "test_runs", "schedule_id", "TEXT NOT NULL DEFAULT ''")
+	addColumn(db, "dns_results", "protocol", "TEXT NOT NULL DEFAULT ''")
 	return nil
 }
 

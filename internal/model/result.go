@@ -5,6 +5,7 @@ import "time"
 type QueryResult struct {
 	ServerName string    `json:"server_name"`
 	ServerAddr string    `json:"server_addr"`
+	Protocol   string    `json:"protocol,omitempty"` // "" or "udp" | "dot" | "doh"
 	FQDN       string    `json:"fqdn"`
 	ResponseMs float64   `json:"response_ms"`
 	Status     string    `json:"status"` // ok | error | timeout

@@ -64,9 +64,9 @@ func (s *RunStore) Save(run *model.TestRun) error {
 	for _, r := range run.DNSResults {
 		answers, _ := json.Marshal(r.Answers)
 		_, err = tx.Exec(
-			`INSERT INTO dns_results (run_id, server_name, server_addr, fqdn, response_ms, status, answers, error, timestamp)
-			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-			run.ID, r.ServerName, r.ServerAddr, r.FQDN, r.ResponseMs, r.Status, string(answers), r.Error, r.Timestamp,
+			`INSERT INTO dns_results (run_id, server_name, server_addr, fqdn, response_ms, status, answers, error, timestamp, protocol)
+			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			run.ID, r.ServerName, r.ServerAddr, r.FQDN, r.ResponseMs, r.Status, string(answers), r.Error, r.Timestamp, r.Protocol,
 		)
 		if err != nil {
 			return fmt.Errorf("insert dns result: %w", err)
@@ -190,7 +190,7 @@ func (s *RunStore) Get(id string) (*model.TestRun, error) {
 	}
 
 	dRows, err := s.db.Query(
-		`SELECT server_name, server_addr, fqdn, response_ms, status, answers, error, timestamp
+		`SELECT server_name, server_addr, fqdn, response_ms, status, answers, error, timestamp, protocol
 		 FROM dns_results WHERE run_id = ?`, id)
 	if err != nil {
 		return nil, err
@@ -201,7 +201,7 @@ func (s *RunStore) Get(id string) (*model.TestRun, error) {
 		var answers string
 		var errStr sql.NullString
 		if err := dRows.Scan(&r.ServerName, &r.ServerAddr, &r.FQDN, &r.ResponseMs,
-			&r.Status, &answers, &errStr, &r.Timestamp); err != nil {
+			&r.Status, &answers, &errStr, &r.Timestamp, &r.Protocol); err != nil {
 			return nil, err
 		}
 		json.Unmarshal([]byte(answers), &r.Answers) //nolint:errcheck
