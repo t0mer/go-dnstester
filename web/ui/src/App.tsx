@@ -95,11 +95,12 @@ export default function App() {
 
   const showUpdateBadge = !!(updateInfo?.available && updateInfo.latest === skippedVersion)
 
-  const { data: history = [] } = useQuery({
+  const { data: historyData } = useQuery({
     queryKey: ['history'],
-    queryFn: () => api.listHistory(100),
+    queryFn: () => api.listHistory(200),
     refetchInterval: 15_000,
   })
+  const history = historyData?.items ?? []
 
   const handleResult = (run: TestRun) => {
     setActiveRun(run)
@@ -227,7 +228,6 @@ export default function App() {
               </p>
             </div>
             <HistoryList
-              history={history}
               schedules={config?.schedules ?? []}
               activeId={activeRun?.id}
               baselineId={baseline?.id}
