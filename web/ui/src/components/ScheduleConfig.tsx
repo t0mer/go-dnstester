@@ -187,20 +187,20 @@ function ScheduleFormFields({ form, setForm }: { form: FormState; setForm: (f: F
 
   return (
     <div className="space-y-3">
-      <div className="flex gap-3 flex-wrap">
-        <div>
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex-1 sm:flex-none">
           <label className="block text-xs text-gray-500 mb-1">Name</label>
           <input
-            className="input w-48"
+            className="input w-full sm:w-48"
             placeholder="My schedule"
             value={form.name}
             onChange={e => upd({ name: e.target.value })}
           />
         </div>
-        <div>
+        <div className="flex-1 sm:flex-none">
           <label className="block text-xs text-gray-500 mb-1">Type</label>
           <select
-            className="input"
+            className="input w-full sm:w-auto"
             value={form.type}
             onChange={e => upd({ type: e.target.value as ScheduleType })}
           >
@@ -232,7 +232,7 @@ function ScheduleFormFields({ form, setForm }: { form: FormState; setForm: (f: F
       )}
 
       {(form.type === 'daily' || form.type === 'weekdays' || form.type === 'weekly' || form.type === 'monthly') && (
-        <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 flex-wrap">
           {form.type === 'weekdays' && (
             <WeekdayPicker value={form.weekdays} onChange={weekdays => upd({ weekdays })} />
           )}

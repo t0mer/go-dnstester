@@ -37,7 +37,7 @@ function RunSelector({ label, value, onChange, history, scheduleMap, exclude }: 
   return (
     <div className="flex flex-col gap-1">
       <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{label}</label>
-      <select value={value} onChange={e => onChange(e.target.value)} className="input text-sm min-w-[240px]">
+      <select value={value} onChange={e => onChange(e.target.value)} className="input text-sm w-full sm:min-w-[240px]">
         <option value="">— select a run —</option>
         {history.filter(r => r.id !== exclude).map(r => (
           <option key={r.id} value={r.id}>
@@ -161,9 +161,9 @@ export function CompareView({ history, schedules }: Props) {
   return (
     <div className="space-y-6">
       <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
-        <div className="flex flex-wrap items-end gap-4">
+        <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-end gap-4">
           <RunSelector label="Run A (baseline)" value={idA} onChange={setIdA} history={history} scheduleMap={scheduleMap} exclude={idB} />
-          <div className="text-gray-300 dark:text-gray-600 text-2xl pb-1">vs</div>
+          <div className="text-gray-300 dark:text-gray-600 text-xl hidden sm:block pb-1">vs</div>
           <RunSelector label="Run B" value={idB} onChange={setIdB} history={history} scheduleMap={scheduleMap} exclude={idA} />
         </div>
 

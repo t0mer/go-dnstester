@@ -129,12 +129,12 @@ export default function App() {
         />
       )}
 
-      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">DNS Tester</h1>
+      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-3 flex-wrap">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100">DNS Tester</h1>
             {versionInfo && (
-              <span className="text-xs text-gray-400 font-mono">{versionInfo.version}</span>
+              <span className="text-xs text-gray-400 font-mono hidden sm:inline">{versionInfo.version}</span>
             )}
             {showUpdateBadge && (
               <button
@@ -147,11 +147,11 @@ export default function App() {
             )}
           </div>
           {activeRun?.completed_at && (
-            <p className="text-xs text-gray-500 mt-0.5">
-              Run {new Date(activeRun.started_at).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'medium' })}
+            <p className="text-xs text-gray-500 mt-0.5 truncate max-w-[240px] sm:max-w-none">
+              Run {new Date(activeRun.started_at).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}
               {baseline && (
                 <span className="ml-2 text-purple-600">
-                  · comparing with {new Date(baseline.started_at).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'medium' })}
+                  · baseline set
                   <button onClick={() => setBaseline(null)} className="ml-1 hover:underline">(clear)</button>
                 </span>
               )}
@@ -161,13 +161,13 @@ export default function App() {
         <TestRunner onResult={handleResult} />
       </header>
 
-      <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6">
-        <div className="flex gap-1">
+      <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-2 sm:px-6 overflow-x-auto">
+        <div className="flex">
           {TABS.map(t => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+              className={`flex-1 sm:flex-none px-3 sm:px-5 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                 tab === t.id
                   ? 'border-blue-600 text-blue-600'
                   : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
@@ -179,9 +179,9 @@ export default function App() {
         </div>
       </nav>
 
-      <main className="p-6 max-w-7xl mx-auto">
+      <main className="p-4 sm:p-6 max-w-7xl mx-auto">
         {tab === 'results' && (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {!activeRun ? (
               <div className="text-center py-20 text-gray-400 dark:text-gray-500">
                 <p className="text-lg">No results yet</p>

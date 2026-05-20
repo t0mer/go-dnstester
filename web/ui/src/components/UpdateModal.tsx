@@ -47,8 +47,8 @@ export function UpdateModal({ info, onSkip, onClose }: Props) {
   const isUpdating = phase !== 'idle'
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-xl w-full max-w-lg">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 p-0 sm:p-4">
+      <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-xl shadow-xl w-full sm:max-w-lg max-h-[90vh] overflow-y-auto">
 
         <div className="px-6 py-5 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Update Available</h2>
@@ -112,7 +112,7 @@ export function UpdateModal({ info, onSkip, onClose }: Props) {
           )}
         </div>
 
-        <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+        <div className="px-4 sm:px-6 py-4 border-t border-gray-100 dark:border-gray-700 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3">
           <button
             onClick={onSkip}
             disabled={isUpdating}
@@ -120,7 +120,7 @@ export function UpdateModal({ info, onSkip, onClose }: Props) {
           >
             Skip this version
           </button>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <button onClick={onClose} disabled={isUpdating} className="btn-secondary disabled:opacity-40">
               Remind me later
             </button>

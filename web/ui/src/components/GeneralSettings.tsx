@@ -65,7 +65,7 @@ export function GeneralSettings({ config, dark, onToggleDark }: Props) {
         </div>
 
         {/* Version + update check */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div>
             <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Current version</p>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-mono">

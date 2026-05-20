@@ -29,11 +29,11 @@ export function HistoryList({ history, schedules, activeId, baselineId, onView, 
       <table className="w-full text-sm">
         <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
           <tr>
-            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Time</th>
-            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Queries</th>
-            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Success</th>
-            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Avg (ms)</th>
-            <th className="px-4 py-3" />
+            <th className="px-3 sm:px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Time</th>
+            <th className="px-3 sm:px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide hidden sm:table-cell">Queries</th>
+            <th className="px-3 sm:px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Success</th>
+            <th className="px-3 sm:px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide hidden sm:table-cell">Avg (ms)</th>
+            <th className="px-3 sm:px-4 py-3" />
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -47,40 +47,43 @@ export function HistoryList({ history, schedules, activeId, baselineId, onView, 
 
             return (
               <tr key={run.id} className={`hover:bg-gray-50 dark:hover:bg-gray-800 ${isActive ? 'bg-blue-50 dark:bg-blue-950/50' : ''}`}>
-                <td className="px-4 py-2.5 whitespace-nowrap">
-                  <span className="text-gray-800 dark:text-gray-200">{timeLabel(run.started_at)}</span>
-                  {scheduleName && (
-                    <span className="ml-2 text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 px-1.5 py-0.5 rounded">
-                      🕐 {scheduleName}
-                    </span>
-                  )}
-                  {isActive    && <span className="ml-2 text-xs text-blue-600 dark:text-blue-400 font-medium">viewing</span>}
-                  {isBaseline  && <span className="ml-2 text-xs text-purple-600 dark:text-purple-400 font-medium">baseline</span>}
+                <td className="px-3 sm:px-4 py-3 min-w-0">
+                  <div className="text-sm text-gray-800 dark:text-gray-200 whitespace-nowrap">{timeLabel(run.started_at)}</div>
+                  <div className="flex flex-wrap gap-1 mt-0.5">
+                    {scheduleName && (
+                      <span className="text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 px-1.5 py-0.5 rounded">
+                        🕐 {scheduleName}
+                      </span>
+                    )}
+                    {isActive    && <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">viewing</span>}
+                    {isBaseline  && <span className="text-xs text-purple-600 dark:text-purple-400 font-medium">baseline</span>}
+                  </div>
                 </td>
-                <td className="px-4 py-2.5 tabular-nums text-gray-600 dark:text-gray-300">{run.total_queries}</td>
-                <td className="px-4 py-2.5 tabular-nums">
+                <td className="px-3 sm:px-4 py-3 tabular-nums text-sm text-gray-600 dark:text-gray-300 hidden sm:table-cell">{run.total_queries}</td>
+                <td className="px-3 sm:px-4 py-3 tabular-nums text-sm">
                   <span className={pct === 100 ? 'text-green-600 dark:text-green-400' : pct >= 80 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'}>
-                    {run.success_count}/{run.total_queries} ({pct}%)
+                    {run.success_count}/{run.total_queries}
+                    <span className="hidden sm:inline"> ({pct}%)</span>
                   </span>
                 </td>
-                <td className="px-4 py-2.5 tabular-nums text-gray-600 dark:text-gray-300">
+                <td className="px-3 sm:px-4 py-3 tabular-nums text-sm text-gray-600 dark:text-gray-300 hidden sm:table-cell">
                   {run.avg_response_ms > 0 ? `${run.avg_response_ms.toFixed(0)} ms` : '—'}
                 </td>
-                <td className="px-4 py-2.5">
-                  <div className="flex items-center gap-2 justify-end">
+                <td className="px-3 sm:px-4 py-3">
+                  <div className="flex items-center gap-1.5 justify-end">
                     <button
                       onClick={() => load(run, onView)}
                       disabled={isActive}
-                      className="text-xs px-2.5 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-40 disabled:cursor-default transition-colors"
+                      className="text-xs px-2.5 py-1.5 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-40 disabled:cursor-default transition-colors"
                     >
                       View
                     </button>
                     {isBaseline ? (
-                      <button onClick={() => onSetBaseline(null)} className="text-xs px-2.5 py-1 rounded border border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950 transition-colors">
+                      <button onClick={() => onSetBaseline(null)} className="text-xs px-2.5 py-1.5 rounded border border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950 transition-colors">
                         Clear
                       </button>
                     ) : (
-                      <button onClick={() => load(run, r => onSetBaseline(r))} className="text-xs px-2.5 py-1 rounded border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                      <button onClick={() => load(run, r => onSetBaseline(r))} className="text-xs px-2.5 py-1.5 rounded border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                         Baseline
                       </button>
                     )}

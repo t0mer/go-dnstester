@@ -59,7 +59,7 @@ export function ServerConfig({ config }: Props) {
 
   return (
     <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
-      <div className="px-5 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between flex-wrap gap-3">
+      <div className="px-5 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">DNS Servers</h2>
         <div className="flex items-center gap-2 flex-wrap">
           <button onClick={() => backup.mutate()} className="btn-secondary">Backup</button>
@@ -94,15 +94,15 @@ export function ServerConfig({ config }: Props) {
         ))}
       </ul>
 
-      <div className="px-5 py-4 border-t border-gray-100 dark:border-gray-700 flex items-center gap-2">
-        <input type="text" placeholder="Name" value={newName} onChange={e => setNewName(e.target.value)} className="input flex-1" />
+      <div className="px-4 sm:px-5 py-4 border-t border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row gap-2">
+        <input type="text" placeholder="Name" value={newName} onChange={e => setNewName(e.target.value)} className="input w-full sm:flex-1" />
         <input
           type="text" placeholder="IP / Address" value={newAddr}
           onChange={e => setNewAddr(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && addServer()}
-          className="input flex-1"
+          className="input w-full sm:flex-1"
         />
-        <button onClick={addServer} className="btn-primary">Add</button>
+        <button onClick={addServer} className="btn-primary w-full sm:w-auto">Add</button>
       </div>
     </div>
   )
