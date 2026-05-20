@@ -200,7 +200,12 @@ Interactive Swagger UI at `/api/docs` · OpenAPI spec at `/api/openapi.json`.
 | `GET` | `/api/history?limit=25&offset=0` | Paginated list of runs — returns `{ total, items }` |
 | `GET` | `/api/history/{id}` | Get a specific historical run |
 | `GET` | `/api/compare?a={id}&b={id}` | Compare two runs |
-| `GET` | `/api/trends?hours=168` | Per-server avg response time bucketed by day/hour |
+
+### Trends
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/trends?hours=168` | Per-server avg response time bucketed by day (default 7 days) or hour (≤48 h) |
 
 ### Configuration
 
@@ -212,6 +217,8 @@ Interactive Swagger UI at `/api/docs` · OpenAPI spec at `/api/openapi.json`.
 | `POST` | `/api/config/restore` | Restore config from backup |
 | `GET` | `/api/config/export` | Download config as JSON |
 | `POST` | `/api/config/import` | Import config from JSON |
+
+> `/api/config` (GET/PUT) are backward-compatible aliases for `/api/settings`.
 
 ### Schedules
 
