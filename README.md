@@ -53,6 +53,11 @@ Light/dark theme toggle (☀️ / 🌙) in Settings → General. Preference is s
 ### Mobile-First UI
 Fully responsive layout that works on phones without horizontal scroll. The DNS results table adapts its columns, forms stack vertically, and the update modal slides up as a bottom sheet on small screens.
 
+### Historical Trends
+The **Trends** tab shows how DNS response times have changed over time with a time-series line chart — one line per server, auto-bucketed by day (7-day and 30-day views) or hour (24-hour view). Includes a period-averages summary table with weighted mean and sample count per server. DoT and DoH servers appear alongside plain UDP so all three protocols can be compared over time.
+
+Time range selector: **24 h** (hourly buckets) · **7 days** (daily) · **30 days** (daily).
+
 ### Auto-Update
 Optional automatic update checks (off by default, enable in Settings → General). When a new release is detected:
 - A modal shows the current vs latest version and the full rendered changelog.
@@ -195,6 +200,7 @@ Interactive Swagger UI at `/api/docs` · OpenAPI spec at `/api/openapi.json`.
 | `GET` | `/api/history?limit=25&offset=0` | Paginated list of runs — returns `{ total, items }` |
 | `GET` | `/api/history/{id}` | Get a specific historical run |
 | `GET` | `/api/compare?a={id}&b={id}` | Compare two runs |
+| `GET` | `/api/trends?hours=168` | Per-server avg response time bucketed by day/hour |
 
 ### Configuration
 
