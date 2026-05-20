@@ -19,6 +19,7 @@ type Server struct {
 	historyHandler  *handler.HistoryHandler
 	scheduleHandler *handler.ScheduleHandler
 	updateHandler   *handler.UpdateHandler
+	trendsHandler   *handler.TrendsHandler
 	ui              fs.FS
 	httpSrv         *http.Server
 }
@@ -30,6 +31,7 @@ func New(
 	history *handler.HistoryHandler,
 	schedule *handler.ScheduleHandler,
 	update *handler.UpdateHandler,
+	trends *handler.TrendsHandler,
 	ui fs.FS,
 ) *Server {
 	return &Server{
@@ -39,6 +41,7 @@ func New(
 		historyHandler:  history,
 		scheduleHandler: schedule,
 		updateHandler:   update,
+		trendsHandler:   trends,
 		ui:              ui,
 	}
 }
@@ -73,6 +76,9 @@ func (s *Server) Run() error {
 	mux.HandleFunc("POST /api/schedules", s.scheduleHandler.Create)
 	mux.HandleFunc("PUT /api/schedules/{id}", s.scheduleHandler.Update)
 	mux.HandleFunc("DELETE /api/schedules/{id}", s.scheduleHandler.Delete)
+
+	// Trends
+	mux.HandleFunc("GET /api/trends", s.trendsHandler.Get)
 
 	// Update
 	mux.HandleFunc("GET /api/version", s.updateHandler.Version)

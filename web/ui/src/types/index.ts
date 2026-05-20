@@ -37,6 +37,15 @@ export interface VersionInfo {
   version: string
 }
 
+export interface TrendPoint {
+  server_name: string
+  server_addr: string
+  protocol?: string
+  bucket: string        // "YYYY-MM-DD" or "YYYY-MM-DD HH:00"
+  avg_ms: number
+  sample_count: number
+}
+
 export interface UpdateInfo {
   current: string
   latest: string
