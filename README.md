@@ -7,27 +7,27 @@ A single Go binary that benchmarks DNS servers — plain UDP/53, DNS over TLS (D
 ### Results Table
 Query results in a sortable, filterable table: server name, protocol badge (DoT/DoH), FQDN, response time (ms), status, and resolved answers.
 
-![Results Table](screenshots/results_table.png)
+![Results Table](https://raw.githubusercontent.com/t0mer/go-dnstester/main/screenshots/results_table.png)
 
 ### Response Time Graph
 Bar chart of average response time per server for the current run, with optional baseline overlay when comparing runs.
 
-![Results Graph](screenshots/results_graph.png)
+![Results Graph](https://raw.githubusercontent.com/t0mer/go-dnstester/main/screenshots/results_graph.png)
 
 ### Ping Results
 ICMP (or TCP fallback) latency to each configured server. DoH servers ping the upstream hostname on port 443; DoT servers use port 853.
 
-![Ping Results](screenshots/ping_results.png)
+![Ping Results](https://raw.githubusercontent.com/t0mer/go-dnstester/main/screenshots/ping_results.png)
 
 ### Test History
 Full log of every test run with timestamp, query count, success rate, and average response time. Paginated with a configurable page size (10 / 25 / 50 / 100). Load any past run into the results view or set it as a baseline.
 
-![Test History](screenshots/tests_history.png)
+![Test History](https://raw.githubusercontent.com/t0mer/go-dnstester/main/screenshots/tests_history.png)
 
 ### Run Comparison
 Select any two historical runs and see an overall delta, side-by-side bar chart, and a per-server breakdown with ms and percentage change.
 
-![Compare Results](screenshots/compare_results.png)
+![Compare Results](https://raw.githubusercontent.com/t0mer/go-dnstester/main/screenshots/compare_results.png)
 
 ### DNS Protocol Support
 Test plain **UDP/53**, **DNS over TLS (DoT / port 853)**, and **DNS over HTTPS (DoH / RFC 8484)** side-by-side. Protocol is selectable per server when adding entries. Results carry a coloured badge (blue = DoT, green = DoH) throughout the UI.
@@ -45,7 +45,7 @@ Automatic runs on a flexible schedule: every N minutes/hours, daily, specific we
 ### Settings
 Manage DNS servers (with protocol), FQDNs, and scheduled scans. Backup, restore, export, and import configuration. Authentication is also configured here (see below).
 
-![Settings](screenshots/settings.png)
+![Settings](https://raw.githubusercontent.com/t0mer/go-dnstester/main/screenshots/settings.png)
 
 ### Authentication
 
